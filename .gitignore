@@ -6,7 +6,7 @@
 *.so
 
 # React dependencies
-node_modules/
+**/node_modules/
 
 # Distribution / packaging
 .Python
