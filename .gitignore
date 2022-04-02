@@ -5,6 +5,9 @@
 # C extensions
 *.so
 
+# React dependencies
+node_modules/
+
 # Distribution / packaging
 .Python
 env/
