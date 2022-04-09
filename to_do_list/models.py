@@ -1,5 +1,3 @@
-from statistics import mode
-from tkinter import CASCADE
 from django.db import models
 
 PRIORITIES = [
@@ -14,7 +12,7 @@ class List(models.Model):
     title = models.TextField(max_length=60, null=False)
 
     def __str__(self):
-        return self.body[0:50]
+        return self.title[0:50]
 
 class Task(models.Model):
     body = models.TextField(null=False, blank=False, max_length=75)

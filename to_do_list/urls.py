@@ -1,9 +1,11 @@
+import dataclasses
 from django.urls import path
 
 from .views import *
-from rest_framework.routers import DefaultRouter
 
-router = DefaultRouter()
-router.register(r'lists', ListViewSet, basename='lists')
-
-urlpatterns = router.urls
+urlpatterns = [
+    path('lists/', ListView.as_view()),
+    path('lists/<str:pk>', ListDetailView.as_view()),
+    path('lists/<str:pk>/tasks_in_list', TasksInListView.as_view()),
+    path('tasks/', TaskView.as_view())
+]
