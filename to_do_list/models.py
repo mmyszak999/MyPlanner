@@ -10,6 +10,7 @@ PRIORITIES = [
 
 class List(models.Model):
     title = models.TextField(max_length=60, null=False)
+    owner = models.ForeignKey('auth.User', related_name='list', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title[0:50]
