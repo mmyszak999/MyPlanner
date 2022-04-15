@@ -1,35 +1,27 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import BasePermission, IsAdminUser, DjangoModelPermissions, SAFE_METHODS
 from rest_framework import status
 
 from .serializers import ListSerializer, TaskSerializer
 from .models import List, Task
+from .permissions import MyOwnPermissions
 
-
-class PostUserWritePermission(BasePermission):
-    message = 'only author can edit the list content'
-
-    def has_object_permission(self, request, view, obj):
-
-        if request.method in SAFE_METHODS:
-            return True
-        return obj.owner == request.user
 
 
 class ListView(APIView):
-    permission_classes = [DjangoModelPermissions]
-
+    permission_classes = (MyOwnPermissions,)
     def get_queryset(self):
         return List.objects.all()
     
     def get(self, request, format=None):
         lists = List.objects.all()
         serializer = ListSerializer(lists, many=True)
+        self.check_permissions(request)
         return Response(serializer.data)
 
     def post(self, request, format=None):
         serializer = ListSerializer(data=request.data)
+        self.check_permissions(request)
         print(request.data)
         if serializer.is_valid():
             serializer.save()
@@ -37,9 +29,8 @@ class ListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ListDetailView(APIView, PostUserWritePermission):
-    permission_classes = [PostUserWritePermission]
-
+class ListDetailView(APIView):
+    permission_classes = (MyOwnPermissions,)
     def get_queryset(self, pk):
         return List.objects.get(pk=pk)
 
