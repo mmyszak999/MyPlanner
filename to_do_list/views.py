@@ -7,7 +7,6 @@ from .models import List, Task
 from .permissions import MyOwnPermissions
 
 
-
 class ListView(APIView):
     permission_classes = (MyOwnPermissions,)
     def get_queryset(self):
@@ -41,7 +40,7 @@ class ListDetailView(APIView):
 
     def put(self, request, pk=None, format=None):
         list = List.objects.get(pk=pk)
-        serializer = ListSerializer(list, many=False)
+        serializer = ListSerializer(data=list, many=False)
         if serializer.is_valid():
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
