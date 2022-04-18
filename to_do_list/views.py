@@ -8,7 +8,9 @@ from .permissions import MyOwnPermissions
 
 
 class ListView(APIView):
+    serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
+
     def get_queryset(self):
         return List.objects.all()
     
