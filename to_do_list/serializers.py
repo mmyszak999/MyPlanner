@@ -1,16 +1,18 @@
-from django.forms import IntegerField
-from rest_framework.serializers import ModelSerializer, ReadOnlyField, ValidationError
-from .models import PRIORITIES, List, Task
+from rest_framework.serializers import ModelSerializer, ReadOnlyField, ValidationError, CharField
+from .models import List, Task
 
 class ListSerializer(ModelSerializer):
-    owner = ReadOnlyField(source='owner.username')
     class Meta:
         model = List
         fields = '__all__'
+    
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['owner'] = instance.owner.username
+        return rep
 
 class TaskSerializer(ModelSerializer):
-    #list = ReadOnlyField(source='List.title')
-    class Meta:
+    class Meta: 
         model = Task
         fields = '__all__'
     
@@ -18,6 +20,13 @@ class TaskSerializer(ModelSerializer):
         priorities = ['A', 'B', 'C', 'D', 'E']
         if value not in priorities:
             raise ValidationError('Priority has to be letter: A, B, C, D or E')
-        return value    
+        return value   
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance) 
+        rep['list'] = instance.list.title
+        rep['owner'] = instance.owner.username
+
+        return rep
     
 

@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.generics import *
 
 from .serializers import ListSerializer, TaskSerializer
 from .models import List, Task
@@ -31,6 +32,7 @@ class ListView(APIView):
 
 
 class ListDetailView(APIView):
+    serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
     def get_queryset(self, pk):
         return List.objects.get(pk=pk)
@@ -42,10 +44,12 @@ class ListDetailView(APIView):
 
     def put(self, request, pk=None, format=None):
         list = List.objects.get(pk=pk)
-        serializer = ListSerializer(data=list, many=False)
-        if serializer.is_valid():
+        serializer = ListSerializer(data=list)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        print("w0w")
+        return Response(serializer.errors)
 
     def delete(self, request, pk=None, format=None):
         list = List.objects.get(pk=pk)
