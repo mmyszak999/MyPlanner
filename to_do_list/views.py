@@ -44,11 +44,11 @@ class ListDetailView(APIView):
 
     def put(self, request, pk=None, format=None):
         list = List.objects.get(pk=pk)
-        serializer = ListSerializer(data=list)
-        if serializer.is_valid(raise_exception=True):
+        serializer = ListSerializer(list, data=request.data, partial=True)
+        print(request.data)
+        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        print("w0w")
         return Response(serializer.errors)
 
     def delete(self, request, pk=None, format=None):

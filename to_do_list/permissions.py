@@ -6,7 +6,7 @@ class MyOwnPermissions(permissions.BasePermission):
         if request.user.is_staff or request.user.is_superuser:
             return True
         
-        if request.method in permissions.SAFE_METHODS:
+        if request.user.is_authenticated:
             return True
         
         return False
