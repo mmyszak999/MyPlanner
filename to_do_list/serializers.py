@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer, ReadOnlyField, ValidationError, CharField
+from rest_framework.serializers import ModelSerializer, ValidationError
 from .models import List, Task
 
 class ListSerializer(ModelSerializer):
@@ -24,7 +24,7 @@ class TaskSerializer(ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance) 
-        rep['list'] = instance.list.title
+        rep['task_list'] = instance.task_list.title
         rep['owner'] = instance.owner.username
 
         return rep

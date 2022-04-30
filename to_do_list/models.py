@@ -18,7 +18,7 @@ class List(models.Model):
 class Task(models.Model):
     body = models.TextField(null=False, blank=True, max_length=75)
     priority = models.CharField(max_length=3, choices=PRIORITIES)
-    list = models.ForeignKey(List, on_delete=models.CASCADE)
+    task_list = models.ForeignKey(List, on_delete=models.CASCADE, related_name='tasklist')
     owner = models.ForeignKey('auth.User', related_name='task', on_delete=models.CASCADE, null=False, blank=False)
 
     def __str__(self):

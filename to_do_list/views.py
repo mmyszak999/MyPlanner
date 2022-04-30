@@ -58,12 +58,13 @@ class ListDetailView(APIView):
 
 class TasksInListView(APIView):
     def get(self, request, pk=None, format=None):
-        tasks = Task.objects.filter(list=pk)
+        tasks = Task.objects.filter(task_list=pk)
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
 
 class TaskView(APIView):
     serializer_class = TaskSerializer
+    permission_classes = (MyOwnPermissions,)
     def get(self, request, format=None):
         tasks = Task.objects.all()
         serializer = TaskSerializer(tasks, many=True)
@@ -78,6 +79,8 @@ class TaskView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class TaskDetailView(APIView):
+    serializer_class = TaskSerializer
+    permission_classes = (MyOwnPermissions,)
     def get(self, request, pk=None, format=None):
         task = Task.objects.get(pk=pk)
         serializer = TaskSerializer(task, many=False)
@@ -85,10 +88,12 @@ class TaskDetailView(APIView):
     
     def put(self, request, pk=None, format=None):
         task = Task.objects.get(pk=pk)
-        serializer = TaskSerializer(Task, many=False)
+        serializer = TaskSerializer(task, data=request.data, partial=True)
+        print(request.data)
         if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors)
 
     def delete(self, request, pk=None, format=None):
         task = Task.objects.get(pk=pk)
