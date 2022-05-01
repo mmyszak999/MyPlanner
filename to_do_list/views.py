@@ -11,31 +11,22 @@ from .permissions import MyOwnPermissions
 class ListView(APIView):
     serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
-
-    def get_queryset(self):
-        return List.objects.all()
     
     def get(self, request, format=None):
         lists = List.objects.all()
         serializer = ListSerializer(lists, many=True)
-        self.check_permissions(request)
-        return Response(serializer.data)
+        return Response(serializer.data, status=200)
 
     def post(self, request, format=None):
         serializer = ListSerializer(data=request.data)
-        self.check_permissions(request)
-        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class ListDetailView(APIView):
     serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
-    def get_queryset(self, pk):
-        return List.objects.get(pk=pk)
 
     def get(self, request, pk=None, format=None):
         single_list = List.objects.get(pk=pk)

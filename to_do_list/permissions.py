@@ -1,4 +1,10 @@
-from rest_framework import permissions
+from rest_framework import permissions, exceptions
+
+from rest_framework.status import HTTP_404_NOT_FOUND
+
+class Custom404(exceptions.APIException):
+    status_code = HTTP_404_NOT_FOUND
+
 
 class MyOwnPermissions(permissions.BasePermission):
 
@@ -6,8 +12,8 @@ class MyOwnPermissions(permissions.BasePermission):
         if request.user.is_staff or request.user.is_superuser:
             return True
         
-        if request.user.is_authenticated:
-            return True
+        if request.user.is_authenticated is False:
+            raise exceptions.NotFound
         
         return False
 
