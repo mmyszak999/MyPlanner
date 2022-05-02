@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.generics import *
+from rest_framework.exceptions import NotFound
 
 from .serializers import ListSerializer, TaskSerializer
 from .models import List, Task
@@ -32,6 +33,9 @@ class ListDetailView(APIView):
 
     def get(self, request, pk=None, format=None):
         single_list = List.objects.get(pk=pk)
+        lists = List.objects.filter(owner=request.user)
+        if (request.user.is_staff or request.user.is_superuser) is False:
+            single_list = lists.get(pk=pk)
         serializer = ListSerializer(single_list, many=False)
         return Response(serializer.data)
 
@@ -60,6 +64,8 @@ class TaskView(APIView):
     permission_classes = (MyOwnPermissions,)
     def get(self, request, format=None):
         tasks = Task.objects.all()
+        if (request.user.is_staff or request.user.is_superuser) is False:
+            tasks = Task.objects.filter(owner=request.user)
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
     
