@@ -14,6 +14,8 @@ class ListView(APIView):
     
     def get(self, request, format=None):
         lists = List.objects.all()
+        if (request.user.is_staff or request.user.is_superuser) is False:
+            lists = List.objects.filter(owner=request.user)
         serializer = ListSerializer(lists, many=True)
         return Response(serializer.data, status=200)
 
