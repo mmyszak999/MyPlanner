@@ -58,7 +58,7 @@ MIDDLEWARE = [
 
 ]
 
-ROOT_URLCONF = 'MyPlanner.urls'
+ROOT_URLCONF = 'my_planner.urls'
 
 TEMPLATES = [
     {
@@ -78,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'MyPlanner.wsgi.application'
+WSGI_APPLICATION = 'my_planner.wsgi.application'
 
 
 # Database
@@ -130,7 +130,7 @@ STATIC_URL = 'static/'
 
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'frontend_todoapp/build/static'
+    #BASE_DIR / 'frontend_todoapp/build/static'
 ]
 
 # Default primary key field type

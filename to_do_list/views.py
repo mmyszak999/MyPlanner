@@ -88,7 +88,6 @@ class TaskView(APIView):
     
     def post(self, request, format=None):
         serializer = TaskSerializer(data=request.data)
-        print(request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
