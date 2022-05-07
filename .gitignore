@@ -5,8 +5,10 @@
 # C extensions
 *.so
 
+# Databases
+db.sqlite3
+
 # React dependencies
-**/node_modules/
 
 
 # Distribution / packaging
