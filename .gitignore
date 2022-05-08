@@ -10,6 +10,8 @@ db.sqlite3
 
 # React dependencies
 
+#Files with environmental variables
+.env
 
 # Distribution / packaging
 .Python
