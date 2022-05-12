@@ -1,3 +1,4 @@
+from functools import partial
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -23,7 +24,7 @@ class ListView(APIView):
         return Response(serializer.data, status=200)
 
     def post(self, request, format=None):
-        serializer = ListSerializer(data=request.data)
+        serializer = ListSerializer(data=request.data, partial=False)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=200)
