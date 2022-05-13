@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
 from .serializers import ListSerializer, TaskSerializer
 from .models import List, Task
@@ -35,15 +36,8 @@ class ListDetailView(APIView):
     permission_classes = (MyOwnPermissions,)
 
     def get_queryset(self, request, pk):
-        single_list = List.objects.get(pk=pk)
-        lists = List.objects.filter(owner=request.user)
-        if MyOwnPermissions:
-            try:
-                single_list = lists.get(pk=pk)
-            except ObjectDoesNotExist:
-                raise NotAuthenticated
-        return single_list
-    
+        return get_object_or_404(List, pk=pk, owner=request.user)
+
     def get(self, request, pk=None, format=None):
         serializer = ListSerializer(self.get_queryset(request, pk), many=False)
         return Response(serializer.data)
@@ -96,14 +90,7 @@ class TaskDetailView(APIView):
     permission_classes = (MyOwnPermissions,)
 
     def get_queryset(self, request, pk):
-        single_task = Task.objects.get(pk=pk)
-        tasks = Task.objects.filter(owner=request.user)
-        if MyOwnPermissions:
-            try:
-                single_task = tasks.get(pk=pk)
-            except ObjectDoesNotExist:
-                raise NotAuthenticated
-        return single_task
+        return get_object_or_404(Task, pk=pk, owner=request.user)
 
     def get(self, request, pk=None, format=None):
         serializer = TaskSerializer(self.get_queryset(request, pk), many=False)
