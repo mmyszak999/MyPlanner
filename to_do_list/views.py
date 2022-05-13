@@ -1,4 +1,5 @@
 from functools import partial
+from logging import raiseExceptions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -25,10 +26,9 @@ class ListView(APIView):
 
     def post(self, request, format=None):
         serializer = ListSerializer(data=request.data, partial=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=200)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=200)
 
 class ListDetailView(APIView):
     serializer_class = ListSerializer
@@ -51,11 +51,9 @@ class ListDetailView(APIView):
     def put(self, request, pk=None, format=None):
         list = List.objects.get(pk=pk)
         serializer = ListSerializer(list, data=request.data, partial=True)
-        print(request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def delete(self, request, pk=None, format=None):
         self.get_queryset(request, pk).delete()
@@ -89,10 +87,9 @@ class TaskView(APIView):
     
     def post(self, request, format=None):
         serializer = TaskSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 class TaskDetailView(APIView):
     serializer_class = TaskSerializer
@@ -114,19 +111,10 @@ class TaskDetailView(APIView):
     
     def put(self, request, pk=None, format=None):
         serializer = TaskSerializer(self.get_queryset(request, pk), data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def delete(self, request, pk=None, format=None):
         self.get_queryset(request, pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-
-
-
-
