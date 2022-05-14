@@ -1,7 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated
 from django.shortcuts import get_object_or_404, get_list_or_404
 
 from .serializers import ListSerializer, TaskSerializer
@@ -52,27 +51,21 @@ class ListDetailView(APIView):
         self.get_queryset(request, pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TasksInListView(APIView):
-    serializer_class = TaskSerializer
-    permission_classes = (MyOwnPermissions,)
-
-    def get_queryset(self, request, pk):
-        if request.user.is_staff or request.user.is_superuser:
-            return Task.objects.filter(task_list__id=pk)
-        raise NotAuthenticated
-         
-    def get(self, request, pk=None, format=None):
-        serializer = TaskSerializer(self.get_queryset(request, pk=pk), many=True)
-        return Response(serializer.data)
-
 class TaskView(APIView):
     serializer_class = TaskSerializer
     permission_classes = (MyOwnPermissions,)
 
     def get_queryset(self, request):
-        if request.user.is_staff or request.user.is_superuser:
-            return get_list_or_404(Task)
-        return get_list_or_404(Task, owner=request.user)
+        search = request.query_params.get('task_list')
+        if search is not None:
+            if request.user.is_staff or request.user.is_superuser:
+                return get_list_or_404(Task, task_list=search)
+            return get_list_or_404(Task, task_list=search, owner=request.user)
+        else:
+            if request.user.is_staff or request.user.is_superuser:
+                return get_list_or_404(Task)
+            return get_list_or_404(Task, owner=request.user)
+            
     
     def get(self, request, format=None):
         serializer = TaskSerializer(self.get_queryset(request), many=True)
