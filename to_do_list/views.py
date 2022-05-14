@@ -1,11 +1,8 @@
-from functools import partial
-from logging import raiseExceptions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated
-from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 
 from .serializers import ListSerializer, TaskSerializer
 from .models import List, Task
@@ -18,9 +15,9 @@ class ListView(APIView):
     
     def get_queryset(self, request):
         if request.user.is_staff or request.user.is_superuser:
-            return List.objects.all()
-        return List.objects.filter(owner=request.user)
-    
+            return get_list_or_404(List)
+        return get_list_or_404(List, owner=request.user)
+
     def get(self, request, format=None):
         serializer = ListSerializer(self.get_queryset(request), many=True)
         return Response(serializer.data, status=200)
@@ -36,7 +33,9 @@ class ListDetailView(APIView):
     permission_classes = (MyOwnPermissions,)
 
     def get_queryset(self, request, pk):
-        return get_object_or_404(List, pk=pk, owner=request.user)
+        obj = get_object_or_404(List, pk=pk)
+        self.check_object_permissions(request, obj)
+        return obj
 
     def get(self, request, pk=None, format=None):
         serializer = ListSerializer(self.get_queryset(request, pk), many=False)
@@ -72,8 +71,8 @@ class TaskView(APIView):
 
     def get_queryset(self, request):
         if request.user.is_staff or request.user.is_superuser:
-            return Task.objects.all()
-        return Task.objects.filter(owner=request.user)
+            return get_list_or_404(Task)
+        return get_list_or_404(Task, owner=request.user)
     
     def get(self, request, format=None):
         serializer = TaskSerializer(self.get_queryset(request), many=True)
@@ -90,7 +89,9 @@ class TaskDetailView(APIView):
     permission_classes = (MyOwnPermissions,)
 
     def get_queryset(self, request, pk):
-        return get_object_or_404(Task, pk=pk, owner=request.user)
+        obj = get_object_or_404(Task, pk=pk)
+        self.check_object_permissions(request, obj)
+        return obj
 
     def get(self, request, pk=None, format=None):
         serializer = TaskSerializer(self.get_queryset(request, pk), many=False)
