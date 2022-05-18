@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.shortcuts import get_object_or_404, get_list_or_404
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .serializers import ListSerializer, TaskSerializer
 from .models import List, Task
@@ -11,6 +12,7 @@ from .permissions import MyOwnPermissions
 class ListView(APIView):
     serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
+    authentication_classes = (JWTAuthentication,)
     
     def get_queryset(self, request):
         if request.user.is_staff or request.user.is_superuser:
