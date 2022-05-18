@@ -1,5 +1,5 @@
-from rest_framework.permissions import BasePermission
-from rest_framework.exceptions import NotAuthenticated, NotFound
+from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.exceptions import NotFound
 
 
 class MyOwnPermissions(BasePermission):
@@ -7,7 +7,7 @@ class MyOwnPermissions(BasePermission):
     def has_permission(self, request, view):
         if request.user.is_authenticated is False:
             raise NotFound
-        
+
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -16,5 +16,5 @@ class MyOwnPermissions(BasePermission):
         
         if request.user.is_staff or request.user.is_superuser:
             return True
-        
-        raise NotAuthenticated
+
+        return False
