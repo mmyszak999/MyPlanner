@@ -32,6 +32,7 @@ class ListView(APIView):
 class ListDetailView(APIView):
     serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
+    authentication_classes = (JWTAuthentication,)
 
     def get_queryset(self, request, pk):
         obj = get_object_or_404(List, pk=pk)
@@ -56,6 +57,7 @@ class ListDetailView(APIView):
 class TaskView(APIView):
     serializer_class = TaskSerializer
     permission_classes = (MyOwnPermissions,)
+    authentication_classes = (JWTAuthentication,)
 
     def get_queryset(self, request):
         search = request.query_params.get('task_list')
@@ -82,6 +84,7 @@ class TaskView(APIView):
 class TaskDetailView(APIView):
     serializer_class = TaskSerializer
     permission_classes = (MyOwnPermissions,)
+    authentication_classes = (JWTAuthentication,)
 
     def get_queryset(self, request, pk):
         obj = get_object_or_404(Task, pk=pk)
