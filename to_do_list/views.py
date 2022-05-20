@@ -1,5 +1,5 @@
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework import status
 from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -9,7 +9,7 @@ from .models import List, Task
 from .permissions import MyOwnPermissions
 
 
-class ListView(APIView):
+class ListView(GenericAPIView):
     serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
@@ -29,7 +29,7 @@ class ListView(APIView):
         serializer.save()
         return Response(serializer.data, status=200)
 
-class ListDetailView(APIView):
+class ListDetailView(GenericAPIView):
     serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
@@ -54,7 +54,7 @@ class ListDetailView(APIView):
         self.get_queryset(request, pk).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TaskView(APIView):
+class TaskView(GenericAPIView):
     serializer_class = TaskSerializer
     permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
@@ -81,7 +81,7 @@ class TaskView(APIView):
         serializer.save()
         return Response(serializer.data)
 
-class TaskDetailView(APIView):
+class TaskDetailView(GenericAPIView):
     serializer_class = TaskSerializer
     permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
