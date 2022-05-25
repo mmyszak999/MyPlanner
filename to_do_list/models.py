@@ -1,12 +1,6 @@
 from django.db import models
 
-PRIORITIES = [
-    ('A', 'A'),
-    ('B', 'B'),
-    ('C', 'C'),
-    ('D', 'D'),
-    ('E', 'E')
-]
+from .enums import PRIORITIES
 
 class List(models.Model):
     title = models.TextField(max_length=60)
@@ -18,7 +12,7 @@ class List(models.Model):
 class Task(models.Model):
     body = models.TextField(max_length=75)
     task_list = models.ForeignKey(List, on_delete=models.CASCADE, related_name='tasklist')
-    priority = models.CharField(max_length=3, choices=PRIORITIES)
+    priority = models.CharField(max_length=1, choices=PRIORITIES)
 
     def __str__(self):
         return self.body[0:50]
