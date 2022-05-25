@@ -17,7 +17,6 @@ class List(models.Model):
 
 class Task(models.Model):
     body = models.TextField(max_length=75)
-    owner = models.ForeignKey('auth.User', related_name='tasks', on_delete=models.CASCADE)
     task_list = models.ForeignKey(List, on_delete=models.CASCADE, related_name='tasklist')
     priority = models.CharField(max_length=3, choices=PRIORITIES)
 

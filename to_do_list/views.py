@@ -1,15 +1,26 @@
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
-from rest_framework import status
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT
+)
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.mixins import (
+    ListModelMixin,
+    CreateModelMixin,
+    DestroyModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin
+)
 from django.shortcuts import get_object_or_404, get_list_or_404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .serializers import ListSerializer, TaskSerializer
-from .models import List, Task
-from .permissions import MyOwnPermissions
+from to_do_list.serializers import ListSerializer, TaskSerializer
+from to_do_list.models import List, Task
+from to_do_list.permissions import MyOwnPermissions
 
 
-class ListView(GenericAPIView):
+class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
@@ -19,40 +30,36 @@ class ListView(GenericAPIView):
             return get_list_or_404(List)
         return get_list_or_404(List, owner=request.user)
 
-    def get(self, request, format=None):
+    def get(self, request):
         serializer = ListSerializer(self.get_queryset(request), many=True)
-        return Response(serializer.data, status=200)
+        return Response(serializer.data, status=HTTP_200_OK)
 
-    def post(self, request, format=None):
-        serializer = ListSerializer(data=request.data, partial=False)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=200)
+    def post(self, request):
+        return CreateModelMixin.create(self, request)
 
-class ListDetailView(GenericAPIView):
+class ListDetailView(GenericAPIView, UpdateModelMixin, DestroyModelMixin):
     serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
 
-    def get_queryset(self, request, pk):
+    def get_object(self, request, pk=None):
         obj = get_object_or_404(List, pk=pk)
         self.check_object_permissions(request, obj)
         return obj
 
-    def get(self, request, pk=None, format=None):
-        serializer = ListSerializer(self.get_queryset(request, pk), many=False)
+    def get(self, request, pk=None):
+        serializer = ListSerializer(self.get_object(request, pk), many=False)
         return Response(serializer.data)
 
-    def put(self, request, pk=None, format=None):
-        list = List.objects.get(pk=pk)
-        serializer = ListSerializer(list, data=request.data, partial=True)
+    def put(self, request, pk=None):
+        serializer = TaskSerializer(self.get_object(request, pk), data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
-    def delete(self, request, pk=None, format=None):
-        self.get_queryset(request, pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, pk=None):
+        self.get_object(request, pk).delete()
+        return Response(status=HTTP_204_NO_CONTENT)
 
 class TaskView(GenericAPIView):
     serializer_class = TaskSerializer
@@ -61,14 +68,12 @@ class TaskView(GenericAPIView):
 
     def get_queryset(self, request):
         search = request.query_params.get('task_list')
-        if search is not None:
-            if request.user.is_staff or request.user.is_superuser:
-                return get_list_or_404(Task, task_list=search)
-            return get_list_or_404(Task, task_list=search, owner=request.user)
-        else:
-            if request.user.is_staff or request.user.is_superuser:
-                return get_list_or_404(Task)
-            return get_list_or_404(Task, owner=request.user)
+        tasks = Task.objects.all()
+        if not (request.user.is_staff or request.user.is_superuser):
+            tasks = Task.objects.filter(task_list__owner=request.user)
+        if (search := request.query_params.get("task_list")) is not None:
+            return tasks.filter(task_list=search)
+        return tasks
             
     
     def get(self, request, format=None):
@@ -91,16 +96,16 @@ class TaskDetailView(GenericAPIView):
         self.check_object_permissions(request, obj)
         return obj
 
-    def get(self, request, pk=None, format=None):
+    def get(self, request, pk=None):
         serializer = TaskSerializer(self.get_queryset(request, pk), many=False)
         return Response(serializer.data)
     
-    def put(self, request, pk=None, format=None):
+    def put(self, request, pk=None):
         serializer = TaskSerializer(self.get_queryset(request, pk), data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
-    def delete(self, request, pk=None, format=None):
+    def delete(self, request, pk=None):
         self.get_queryset(request, pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=HTTP_204_NO_CONTENT)
