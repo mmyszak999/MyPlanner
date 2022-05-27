@@ -7,16 +7,14 @@ from rest_framework.mixins import (
     UpdateModelMixin
 )
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 
 from to_do_list.serializers import ListSerializer, TaskSerializer
 from to_do_list.models import List, Task
-from to_do_list.permissions import MyOwnPermissions
-
 
 class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = ListSerializer
-    permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
     
     def get_queryset(self):
@@ -33,7 +31,6 @@ class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
 
 class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = ListSerializer
-    permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
 
     def get_object(self):
@@ -50,16 +47,14 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
         return self.destroy(request, pk)
 
 class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
-    queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,) 
     
     def get_queryset(self):
         search = self.request.query_params.get('task_list')
-        tasks = self.queryset
+        tasks = Task.objects.all()
         if not (self.request.user.is_staff or self.request.user.is_superuser):
-            tasks = Task.objects.filter(task_list__owner=self.request.user)
+            tasks = tasks.filter(task_list__owner=self.request.user)
         if (search := self.request.query_params.get("task_list")) is not None:
             return tasks.filter(task_list=search)
         return tasks
@@ -72,12 +67,15 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
 
 class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = TaskSerializer
-    permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
 
     def get_object(self):
         pk = self.kwargs['pk']
-        return get_object_or_404(Task, pk=pk)
+        single_task = get_object_or_404(Task, pk=pk)
+        if (self.request.user == single_task.task_list.owner or
+            self.request.user.is_staff or self.request.user.is_superuser):
+            return single_task
+        raise PermissionDenied({"message": "You don't have permission to access"})
 
     def get(self, request, pk):
         return self.retrieve(request, pk)
