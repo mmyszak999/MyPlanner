@@ -1,5 +1,4 @@
 from rest_framework.generics import GenericAPIView
-
 from rest_framework.mixins import (
     ListModelMixin,
     CreateModelMixin,
@@ -8,6 +7,7 @@ from rest_framework.mixins import (
     UpdateModelMixin
 )
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.shortcuts import get_object_or_404
 
 from to_do_list.serializers import ListSerializer, TaskSerializer
 from to_do_list.models import List, Task
@@ -15,15 +15,15 @@ from to_do_list.permissions import MyOwnPermissions
 
 
 class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
-    queryset = List.objects.all()
     serializer_class = ListSerializer
     permission_classes = (MyOwnPermissions,)
     authentication_classes = (JWTAuthentication,)
     
     def get_queryset(self):
+        qs = List.objects.all()
         if self.request.user.is_staff or self.request.user.is_superuser:
-            return self.queryset
-        return self.queryset.filter(owner=self.request.user)
+            return qs
+        return qs.filter(owner=self.request.user)
 
     def get(self, request):
         return self.list(request)
@@ -38,7 +38,7 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
 
     def get_object(self):
         pk = self.kwargs['pk']
-        return List.objects.get(pk=pk)
+        return get_object_or_404(List, pk=pk)
 
     def get(self, request, pk):
         return self.retrieve(request, pk)
@@ -77,7 +77,7 @@ class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
 
     def get_object(self):
         pk = self.kwargs['pk']
-        return Task.objects.get(pk=pk)
+        return get_object_or_404(Task, pk=pk)
 
     def get(self, request, pk):
         return self.retrieve(request, pk)
