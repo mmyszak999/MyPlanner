@@ -6,7 +6,7 @@ class ListSerializer(ModelSerializer):
 
     class Meta:
         model = List
-        fields = ['id','title', 'owner', 'list_owner']
+        fields = ['id', 'title', 'owner', 'list_owner']
 
     def get_list_owner(self, obj):
         return obj.owner.username
@@ -16,7 +16,7 @@ class TaskSerializer(ModelSerializer):
     task_owner = SerializerMethodField()
     class Meta: 
         model = Task
-        fields = ['id','body', 'owner', 'task_owner', 'task_list','list_name', 'priority']
+        fields = ['id', 'body', 'task_owner', 'task_list', 'list_name', 'priority']
     
     def validate_priority(self, value):
         priorities = ['A', 'B', 'C', 'D', 'E']
@@ -28,6 +28,6 @@ class TaskSerializer(ModelSerializer):
         return obj.task_list.title
     
     def get_task_owner(self, obj):
-        return obj.owner.username
+        return obj.task_list.owner.username
     
 

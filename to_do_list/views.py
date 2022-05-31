@@ -1,101 +1,87 @@
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import status
-from django.shortcuts import get_object_or_404, get_list_or_404
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import (
+    ListModelMixin,
+    CreateModelMixin,
+    DestroyModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin
+)
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
 
-from .serializers import ListSerializer, TaskSerializer
-from .models import List, Task
-from .permissions import MyOwnPermissions
+from to_do_list.serializers import ListSerializer, TaskSerializer
+from to_do_list.models import List, Task
 
-
-class ListView(APIView):
+class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = ListSerializer
-    permission_classes = (MyOwnPermissions,)
+    authentication_classes = (JWTAuthentication,)
     
-    def get_queryset(self, request):
-        if request.user.is_staff or request.user.is_superuser:
-            return get_list_or_404(List)
-        return get_list_or_404(List, owner=request.user)
+    def get_queryset(self):
+        qs = List.objects.all()
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return qs
+        return qs.filter(owner=self.request.user)
 
-    def get(self, request, format=None):
-        serializer = ListSerializer(self.get_queryset(request), many=True)
-        return Response(serializer.data, status=200)
+    def get(self, request):
+        return self.list(request)
 
-    def post(self, request, format=None):
-        serializer = ListSerializer(data=request.data, partial=False)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=200)
+    def post(self, request):
+        return self.create(request)
 
-class ListDetailView(APIView):
+class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = ListSerializer
-    permission_classes = (MyOwnPermissions,)
+    authentication_classes = (JWTAuthentication,)
 
-    def get_queryset(self, request, pk):
-        obj = get_object_or_404(List, pk=pk)
-        self.check_object_permissions(request, obj)
-        return obj
+    def get_object(self):
+        pk = self.kwargs['pk']
+        return get_object_or_404(List, pk=pk)
 
-    def get(self, request, pk=None, format=None):
-        serializer = ListSerializer(self.get_queryset(request, pk), many=False)
-        return Response(serializer.data)
+    def get(self, request, pk):
+        return self.retrieve(request, pk)
 
-    def put(self, request, pk=None, format=None):
-        list = List.objects.get(pk=pk)
-        serializer = ListSerializer(list, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    def put(self, request, pk):
+        return self.update(request, pk)
 
-    def delete(self, request, pk=None, format=None):
-        self.get_queryset(request, pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, pk):
+        return self.destroy(request, pk)
 
-class TaskView(APIView):
+class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = TaskSerializer
-    permission_classes = (MyOwnPermissions,)
-
-    def get_queryset(self, request):
-        search = request.query_params.get('task_list')
-        if search is not None:
-            if request.user.is_staff or request.user.is_superuser:
-                return get_list_or_404(Task, task_list=search)
-            return get_list_or_404(Task, task_list=search, owner=request.user)
-        else:
-            if request.user.is_staff or request.user.is_superuser:
-                return get_list_or_404(Task)
-            return get_list_or_404(Task, owner=request.user)
+    authentication_classes = (JWTAuthentication,) 
+    
+    def get_queryset(self):
+        search = self.request.query_params.get('task_list')
+        tasks = Task.objects.all()
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            tasks = tasks.filter(task_list__owner=self.request.user)
+        if (search := self.request.query_params.get("task_list")) is not None:
+            return tasks.filter(task_list=search)
+        return tasks
             
+    def get(self, request):
+        return self.list(request)
     
-    def get(self, request, format=None):
-        serializer = TaskSerializer(self.get_queryset(request), many=True)
-        return Response(serializer.data)
-    
-    def post(self, request, format=None):
-        serializer = TaskSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    def post(self, request):
+        return self.create(request)
 
-class TaskDetailView(APIView):
+class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = TaskSerializer
-    permission_classes = (MyOwnPermissions,)
+    authentication_classes = (JWTAuthentication,)
 
-    def get_queryset(self, request, pk):
-        obj = get_object_or_404(Task, pk=pk)
-        self.check_object_permissions(request, obj)
-        return obj
+    def get_object(self):
+        pk = self.kwargs['pk']
+        single_task = get_object_or_404(Task, pk=pk)
+        if (self.request.user == single_task.task_list.owner or
+            self.request.user.is_staff or self.request.user.is_superuser):
+            return single_task
+        raise PermissionDenied({"message": "You don't have permission to access"})
 
-    def get(self, request, pk=None, format=None):
-        serializer = TaskSerializer(self.get_queryset(request, pk), many=False)
-        return Response(serializer.data)
+    def get(self, request, pk):
+        return self.retrieve(request, pk)
     
-    def put(self, request, pk=None, format=None):
-        serializer = TaskSerializer(self.get_queryset(request, pk), data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    def put(self, request, pk):
+        return self.update(request, pk)
 
-    def delete(self, request, pk=None, format=None):
-        self.get_queryset(request, pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, pk):
+        return self.destroy(request, pk)
