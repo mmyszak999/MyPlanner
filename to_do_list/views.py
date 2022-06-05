@@ -48,6 +48,7 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = TaskSerializer 
     
     def get_queryset(self):
+        search = self.request.query_params.get('task_list')
         tasks = Task.objects.all()
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             tasks = tasks.filter(task_list__owner=self.request.user)
