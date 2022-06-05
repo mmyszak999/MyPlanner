@@ -6,8 +6,6 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
     UpdateModelMixin
 )
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 
 from to_do_list.serializers import ListSerializer, TaskSerializer
@@ -48,7 +46,6 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = TaskSerializer 
     
     def get_queryset(self):
-        search = self.request.query_params.get('task_list')
         tasks = Task.objects.all()
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             tasks = tasks.filter(task_list__owner=self.request.user)
@@ -64,14 +61,11 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
 
 class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = TaskSerializer
-
+    def get_queryset(self):
+        return TaskView.get_queryset(self)
+    
     def get_object(self):
-        pk = self.kwargs['pk']
-        single_task = get_object_or_404(Task, pk=pk)
-        if (self.request.user == single_task.task_list.owner or
-            self.request.user.is_staff or self.request.user.is_superuser):
-            return single_task
-        raise PermissionDenied({"message": "You don't have permission to access"})
+        return super().get_object()
 
     def get(self, request, pk):
         return self.retrieve(request, pk)
