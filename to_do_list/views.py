@@ -15,7 +15,6 @@ from to_do_list.models import List, Task
 
 class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = ListSerializer
-    authentication_classes = (JWTAuthentication,)
     
     def get_queryset(self):
         qs = List.objects.all()
@@ -31,7 +30,6 @@ class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
 
 class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = ListSerializer
-    authentication_classes = (JWTAuthentication,)
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -47,11 +45,9 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
         return self.destroy(request, pk)
 
 class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
-    serializer_class = TaskSerializer
-    authentication_classes = (JWTAuthentication,) 
+    serializer_class = TaskSerializer 
     
     def get_queryset(self):
-        search = self.request.query_params.get('task_list')
         tasks = Task.objects.all()
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             tasks = tasks.filter(task_list__owner=self.request.user)
@@ -67,7 +63,6 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
 
 class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = TaskSerializer
-    authentication_classes = (JWTAuthentication,)
 
     def get_object(self):
         pk = self.kwargs['pk']
