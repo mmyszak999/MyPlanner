@@ -145,18 +145,12 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
      'DEFAULT_AUTHENTICATION_CLASSES': [
-          'rest_framework_simplejwt.authentication.JWTAuthentication'
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-<<<<<<< HEAD
-=======
-
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
->>>>>>> urls_and_views_mod
+    #'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    #'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 

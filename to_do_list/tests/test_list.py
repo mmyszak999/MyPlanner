@@ -1,12 +1,18 @@
+from http import client
 import json
+from django.test import Client
 
 from rest_framework import status
 
 from to_do_list.models import List
 from to_do_list.serializers import ListSerializer
-from .test_setup import TestSetUp
+from .setup_login import TestLoginSetUp
+from django.urls import reverse
 
-class TestListModel(TestSetUp):
+
+class TestListModel(TestLoginSetUp):
     def test_create_list(self):
-        response = self.client.post("http://127.0.0.1:8000/api/lists/", self.user_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.user_data = {'title': 'my_list', 'owner': self.test_user.id}
+        self.response = self.client.post(reverse('api:list-lists'), data=self.user_data)
+        self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
+        
