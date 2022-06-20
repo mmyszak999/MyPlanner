@@ -1,5 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
+from django.contrib.auth import get_user
 
 from .test_setup import TestSetUp
 from to_do_list.models import Task
@@ -20,6 +21,19 @@ class TestTasks(TestSetUp):
         self.obj = Task.objects.get(pk=self.task_pk)
         response = self.client.get(reverse('api:task-single-task', kwargs={'pk': self.obj.pk}))
         self.assertEqual(response.data['id'], self.obj.pk)
+    
+    def test_update_single_task(self):
+        self.obj = Task.objects.get(pk=self.list_pk)
+        new_body = 'Updated List Title'
+        response = self.client.put(reverse('api:task-single-task', kwargs={'pk': self.obj.pk}), data=
+        {'body': new_body, 'task_list': self.obj.task_list.id, 'priority': 'B'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['body'], new_body)
+    
+    def test_delete_single_list(self):
+        self.obj = Task.objects.get(pk=self.task_pk)
+        response = self.client.delete(reverse('api:task-single-task', kwargs={'pk': self.obj.pk}))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_get_tasks_from_the_list(self):
         pk_ = self.list_pk
@@ -42,4 +56,3 @@ class TestTasks(TestSetUp):
         response = self.client.post(reverse('api:task-tasks'), data=self.task_data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['priority'][0], f'"{priority}" is not a valid choice.')
-    

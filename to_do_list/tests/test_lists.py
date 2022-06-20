@@ -1,5 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
+from django.contrib.auth import get_user
 
 from .test_setup import TestSetUp
 from to_do_list.models import List
@@ -21,3 +22,15 @@ class TestLists(TestSetUp):
         self.obj = List.objects.get(pk=self.list_pk)
         response = self.client.get(reverse('api:list-single-list', kwargs={'pk': self.obj.pk}))
         self.assertEqual(response.data['id'], self.obj.pk)
+    
+    def test_update_single_list(self):
+        self.obj = List.objects.get(pk=self.list_pk)
+        new_title = 'Updated Content'
+        response = self.client.put(reverse('api:list-single-list', kwargs={'pk': self.obj.pk}), data={'title': new_title, 'owner': get_user(self.client).id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], new_title)
+    
+    def test_delete_single_list(self):
+        self.obj = List.objects.get(pk=self.list_pk)
+        response = self.client.delete(reverse('api:list-single-list', kwargs={'pk': self.obj.pk}))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
