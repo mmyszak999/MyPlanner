@@ -21,10 +21,7 @@ class TaskSerializer(ModelSerializer):
         fields = ['id', 'body', 'task_owner', 'task_list', 'list_name', 'priority']
     
     def validate(self, attrs):
-        priorities = []
-        for i in range(0, 5):
-            priorities.append(PRIORITIES[i][0])
-            
+        priorities = [x[0] for x in PRIORITIES]
         task_priority = attrs.get('priority')
         task_list = attrs.get('task_list')
         request = self.context.get('request')
@@ -35,7 +32,7 @@ class TaskSerializer(ModelSerializer):
                 raise ValidationError(f"You are not the list owner")
             pass
         
-        if task_priority not in ['A', 'B', 'C', 'D', 'E']:
+        if task_priority not in priorities:
             raise ValidationError(f'Priority has to be letter: A, B, C, D or E')
         pass
 
