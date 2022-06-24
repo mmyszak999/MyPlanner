@@ -7,6 +7,8 @@ from rest_framework_simplejwt.views import (
 
 from to_do_list import views
 
+app_name = 'api'
+
 urlpatterns = [
     path('lists/', views.ListView.as_view(), name='list-lists'),
     path('lists/<int:pk>', views.ListDetailView.as_view(), name='list-single-list'),

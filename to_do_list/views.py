@@ -1,3 +1,4 @@
+from requests import request
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import (
     ListModelMixin,
@@ -18,7 +19,7 @@ class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
         qs = List.objects.all()
         if self.request.user.is_staff or self.request.user.is_superuser:
             return qs
-        return qs.filter(owner=self.request.user)
+        return qs.filter(owner=self.request.user.id)
 
     def get(self, request):
         return self.list(request)
@@ -43,12 +44,13 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
         return self.destroy(request, pk)
 
 class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
-    serializer_class = TaskSerializer 
+    serializer_class = TaskSerializer
+    model = Task 
     
     def get_queryset(self):
         tasks = Task.objects.all()
         if not (self.request.user.is_staff or self.request.user.is_superuser):
-            tasks = tasks.filter(task_list__owner=self.request.user)
+            tasks = tasks.filter(task_list__owner=self.request.user.id)
         if (search := self.request.query_params.get("task_list")) is not None:
             return tasks.filter(task_list=search)
         return tasks
@@ -61,8 +63,22 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
 
 class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = TaskSerializer
+    model = Task
+    
     def get_queryset(self):
-        return TaskView.get_queryset(self)
+        tasks = Task.objects.all()
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            tasks = tasks.filter(task_list__owner=self.request.user.id)
+        if (search := self.request.query_params.get("task_list")) is not None:
+            return tasks.filter(task_list=search)
+        return tasks
+    
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['task_list'] = Task.task_list
+        data['priority'] = Task.priority
+        data['request'] = self.request
+        return data
     
     def get_object(self):
         return super().get_object()
