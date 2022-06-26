@@ -19,7 +19,7 @@ class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
         qs = List.objects.all()
         if self.request.user.is_staff or self.request.user.is_superuser:
             return qs
-        return qs.filter(owner=self.request.user.id)
+        return qs.filter(owner=self.request.user)
 
     def get(self, request):
         return self.list(request)
@@ -50,7 +50,7 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     def get_queryset(self):
         tasks = Task.objects.all()
         if not (self.request.user.is_staff or self.request.user.is_superuser):
-            tasks = tasks.filter(task_list__owner=self.request.user.id)
+            tasks = tasks.filter(task_list__owner=self.request.user)
         if (search := self.request.query_params.get("task_list")) is not None:
             return tasks.filter(task_list=search)
         return tasks
@@ -68,7 +68,7 @@ class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
     def get_queryset(self):
         tasks = Task.objects.all()
         if not (self.request.user.is_staff or self.request.user.is_superuser):
-            tasks = tasks.filter(task_list__owner=self.request.user.id)
+            tasks = tasks.filter(task_list__owner=self.request.user)
         if (search := self.request.query_params.get("task_list")) is not None:
             return tasks.filter(task_list=search)
         return tasks

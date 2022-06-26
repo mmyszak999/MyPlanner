@@ -31,8 +31,8 @@ class TestSetUp(APITestCase):
             Task(body="buy new shoes", task_list=cls.lists[2], priority='E'),
         ])
 
-        cls.list_count = List.objects.all().count()
-        cls.task_count = Task.objects.all().count()
+        cls.list_count = List.objects.count()
+        cls.task_count = Task.objects.count()
 
         cls.list_pk = randint(1, cls.list_count)
         cls.task_pk = randint(1, cls.task_count)

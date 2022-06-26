@@ -26,7 +26,9 @@ class TestLists(TestSetUp):
     def test_update_single_list(self):
         self.obj = List.objects.get(pk=self.list_pk)
         new_title = 'Updated Content'
-        response = self.client.put(reverse('api:list-single-list', kwargs={'pk': self.obj.pk}), data={'title': new_title, 'owner': get_user(self.client).id})
+        response = self.client.put(reverse('api:list-single-list', kwargs={'pk': self.obj.pk}), data={
+            'title': new_title,
+            'owner': self.super_user.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['title'], new_title)
     

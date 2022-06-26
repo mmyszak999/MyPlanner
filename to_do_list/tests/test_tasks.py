@@ -9,7 +9,7 @@ class TestTasks(TestSetUp):
         self.task_data = {'body': '3 bottles of water', 'task_list': 1, 'priority': 'B'}
         response = self.client.post(reverse('api:task-tasks'), data=self.task_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(self.task_data['body'], str(Task.objects.get(id=self.task_count + 1)))
+        self.assertEqual(self.task_data['body'], Task.objects.get(task_list=1, body=self.task_data['body']).body)
         
     def test_get_all_tasks(self):
         response = self.client.get(reverse('api:task-tasks'))
