@@ -38,9 +38,9 @@ class TestTasks(TestSetUp):
     def test_get_tasks_from_the_list(self):
         pk_ = self.list_pk
         self.tasks_in_list_count = Task.objects.filter(task_list=pk_).count()
-        response = self.client.get(reverse('api:task-tasks'), {'task_list': pk_})
+        response = self.client.get(reverse('api:list-tasks-in-list', kwargs={'pk': pk_}))
+        print(response.data)
         self.assertEqual(len(response.data), self.tasks_in_list_count)
-        self.assertEqual(response.request['QUERY_STRING'], f"task_list={pk_}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_create_task_with_the_nonexistent_list(self):

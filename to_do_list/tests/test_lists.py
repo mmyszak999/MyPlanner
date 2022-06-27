@@ -1,6 +1,5 @@
 from django.urls import reverse
 from rest_framework import status
-from django.contrib.auth import get_user
 
 from to_do_list.tests.test_setup import TestSetUp
 from to_do_list.models import List
