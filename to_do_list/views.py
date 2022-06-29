@@ -73,13 +73,6 @@ class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
             return tasks.filter(task_list=search)
         return tasks
     
-    def get_context_data(self, **kwargs):
-        data = super().get_context_data(**kwargs)
-        data['task_list'] = Task.task_list
-        data['priority'] = Task.priority
-        data['request'] = self.request
-        return data
-    
     def get_object(self):
         return super().get_object()
 
