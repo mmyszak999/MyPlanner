@@ -14,7 +14,14 @@ class ListSerializer(ModelSerializer):
         return obj.owner.username
 
 
-class TaskSerializer(ModelSerializer):
+class TaskInputSerializer(ModelSerializer):
+    class Meta: 
+        model = Task
+        fields = ['id', 'body', 'task_list', 'priority']
+        validators = [PriorityValidation(object), TaskAssignmentValidation(object)]
+
+
+class TaskOutputSerializer(ModelSerializer):
     list_name = SerializerMethodField()
     task_owner = SerializerMethodField()
     class Meta: 

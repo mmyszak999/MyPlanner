@@ -9,7 +9,7 @@ from rest_framework.mixins import (
 )
 from django.shortcuts import get_object_or_404
 
-from to_do_list.serializers import ListSerializer, TaskSerializer
+from to_do_list.serializers import ListSerializer, TaskInputSerializer, TaskOutputSerializer
 from to_do_list.models import List, Task
 
 class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
@@ -44,7 +44,7 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
         return self.destroy(request, pk)
 
 class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
-    serializer_class = TaskSerializer
+    serializer_class = [TaskOutputSerializer, TaskInputSerializer]
     model = Task 
     
     def get_queryset(self):
@@ -54,6 +54,11 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
         if (search := self.request.query_params.get("task_list")) is not None:
             return tasks.filter(task_list=search)
         return tasks
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TaskOutputSerializer
+        return TaskInputSerializer
             
     def get(self, request):
         return self.list(request)
@@ -62,7 +67,7 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
         return self.create(request)
 
 class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
-    serializer_class = TaskSerializer
+    serializer_class = [TaskOutputSerializer, TaskInputSerializer]
     model = Task
     
     def get_queryset(self):
@@ -75,6 +80,11 @@ class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
     
     def get_object(self):
         return super().get_object()
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TaskOutputSerializer
+        return TaskInputSerializer
 
     def get(self, request, pk):
         return self.retrieve(request, pk)

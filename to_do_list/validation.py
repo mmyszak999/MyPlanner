@@ -10,7 +10,7 @@ class PriorityValidation(object):
         self.object = object
 
     def __call__(self, value, obj_data):
-        priorities = [x[0] for x in PRIORITIES]
+        priorities = [_priority[0] for _priority in PRIORITIES]
         task_priority = obj_data.initial_data['priority']
         if task_priority not in priorities:
             raise ValidationError(f'Priority has to be letter: A, B, C, D or E')
