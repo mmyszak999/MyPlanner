@@ -1,6 +1,5 @@
 from random import randint
 
-from django.contrib.auth import get_user
 from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 
@@ -10,10 +9,8 @@ from to_do_list.models import List, Task
 class TestSetUp(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.test_user = User.objects.create(username='testuser', password='test_user')
-        cls.super_user = User.objects.create(username="superuser", password="super_user")
-        cls.super_user.is_superuser = True
-        cls.super_user.save()
+        cls.test_user = User.objects.create(username='testuser')
+        cls.super_user = User.objects.create_superuser(username="superuser")
         
         cls.lists = List.objects.bulk_create([
             List(title="shopping_list", owner=cls.test_user),
@@ -34,11 +31,15 @@ class TestSetUp(APITestCase):
             Task(body="buy new shoes", task_list=cls.lists[2], priority='E'),
         ])
 
-        cls.list_count = List.objects.all().count()
-        cls.task_count = Task.objects.all().count()
+        cls.list_count = List.objects.count()
+        cls.task_count = Task.objects.count()
 
         cls.list_pk = randint(1, cls.list_count)
         cls.task_pk = randint(1, cls.task_count)
+    
+    def logInTestUser(self):
+        self.client.logout()
+        self.client.force_login(self.test_user)
 
     def setUp(self):
         self.client.force_login(self.super_user)

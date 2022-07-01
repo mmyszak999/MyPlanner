@@ -1,4 +1,4 @@
-from requests import request
+from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import (
     ListModelMixin,
@@ -19,7 +19,7 @@ class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
         qs = List.objects.all()
         if self.request.user.is_staff or self.request.user.is_superuser:
             return qs
-        return qs.filter(owner=self.request.user.id)
+        return qs.filter(owner=self.request.user)
 
     def get(self, request):
         return self.list(request)
@@ -32,7 +32,13 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
 
     def get_object(self):
         pk = self.kwargs['pk']
-        return get_object_or_404(List, pk=pk)
+        obj = List.objects.get(pk=pk)
+        if(
+            self.request.user.is_staff or 
+            self.request.user.is_superuser or
+            self.request.user == obj.owner):
+            return get_object_or_404(List, pk=pk)
+        raise PermissionDenied
 
     def get(self, request, pk):
         return self.retrieve(request, pk)
@@ -43,17 +49,34 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
     def delete(self, request, pk):
         return self.destroy(request, pk)
 
+class TasksInTheList(GenericAPIView, ListModelMixin):
+    serializer_class = TaskSerializer
+    model = Task
+
+    def get_queryset(self):
+        qs = Task.objects.filter(task_list=self.kwargs['pk'])
+        if not qs.exists():
+            raise NotFound
+        list_owner_id = qs.values('task_list__owner')[0]['task_list__owner']
+        if(
+            self.request.user.is_staff or 
+            self.request.user.is_superuser or
+            self.request.user.id == list_owner_id):
+            return qs
+        raise PermissionDenied
+
+    def get(self, request, pk):
+        return self.list(request)
+
 class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = TaskSerializer
     model = Task 
     
     def get_queryset(self):
-        tasks = Task.objects.all()
-        if not (self.request.user.is_staff or self.request.user.is_superuser):
-            tasks = tasks.filter(task_list__owner=self.request.user.id)
-        if (search := self.request.query_params.get("task_list")) is not None:
-            return tasks.filter(task_list=search)
-        return tasks
+        qs = Task.objects.all()
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return qs
+        return qs.filter(task_list__owner=self.request.user)
             
     def get(self, request):
         return self.list(request)
@@ -65,14 +88,6 @@ class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
     serializer_class = TaskSerializer
     model = Task
     
-    def get_queryset(self):
-        tasks = Task.objects.all()
-        if not (self.request.user.is_staff or self.request.user.is_superuser):
-            tasks = tasks.filter(task_list__owner=self.request.user.id)
-        if (search := self.request.query_params.get("task_list")) is not None:
-            return tasks.filter(task_list=search)
-        return tasks
-    
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['task_list'] = Task.task_list
@@ -81,7 +96,8 @@ class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
         return data
     
     def get_object(self):
-        return super().get_object()
+        pk = self.kwargs['pk']
+        return get_object_or_404(Task, pk=pk)
 
     def get(self, request, pk):
         return self.retrieve(request, pk)
