@@ -18,12 +18,12 @@ class TestTasks(TestSetUp):
         self.assertEqual((len(response.data)), self.task_count)
 
     def test_get_single_task(self):
-        self.obj = Task.objects.get(pk=self.task_pk)
+        self.obj = Task.objects.select_related('task_list').get(pk=self.task_pk)
         response = self.client.get(reverse('api:task-single-task', kwargs={'pk': self.obj.pk}))
         self.assertEqual(response.data['id'], self.obj.pk)
     
     def test_update_single_task(self):
-        self.obj = Task.objects.get(pk=self.list_pk)
+        self.obj = Task.objects.select_related('task_list').get(pk=self.list_pk)
         new_body = 'Updated List Title'
         response = self.client.put(reverse('api:task-single-task', kwargs={'pk': self.obj.pk}), data=
         {'body': new_body, 'task_list': self.obj.task_list.id, 'priority': 'B'})
@@ -31,13 +31,13 @@ class TestTasks(TestSetUp):
         self.assertEqual(response.data['body'], new_body)
     
     def test_delete_single_list(self):
-        self.obj = Task.objects.get(pk=self.task_pk)
+        self.obj = Task.objects.select_related('task_list').get(pk=self.task_pk)
         response = self.client.delete(reverse('api:task-single-task', kwargs={'pk': self.obj.pk}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_get_tasks_from_the_list(self):
         pk_ = self.list_pk
-        self.tasks_in_list_count = Task.objects.filter(task_list=pk_).count()
+        self.tasks_in_list_count = Task.objects.filter(task_list=pk_).select_related('task_list').count()
         response = self.client.get(reverse('api:task-tasks'), {'task_list': pk_})
         self.assertEqual(len(response.data), self.tasks_in_list_count)
         self.assertEqual(response.request['QUERY_STRING'], f"task_list={pk_}")

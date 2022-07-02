@@ -21,6 +21,5 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('my_planner.api_urls', namespace='api')),
-    path('api-auth/', include('rest_framework.urls', namespace='rest-framework')),
-
+    path('api-auth/', include('rest_framework.urls', namespace='rest-framework'))
 ]

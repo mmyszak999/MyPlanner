@@ -1,4 +1,3 @@
-from requests import request
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import (
     ListModelMixin,
@@ -48,7 +47,7 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     model = Task 
     
     def get_queryset(self):
-        tasks = Task.objects.all()
+        tasks = Task.objects.all().select_related('task_list')
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             tasks = tasks.filter(task_list__owner=self.request.user.id)
         if (search := self.request.query_params.get("task_list")) is not None:
@@ -71,7 +70,7 @@ class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
     model = Task
     
     def get_queryset(self):
-        tasks = Task.objects.all()
+        tasks = Task.objects.all().select_related('task_list')
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             tasks = tasks.filter(task_list__owner=self.request.user.id)
         if (search := self.request.query_params.get("task_list")) is not None:
