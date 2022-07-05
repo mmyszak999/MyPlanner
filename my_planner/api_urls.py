@@ -12,6 +12,7 @@ app_name = 'api'
 urlpatterns = [
     path('lists/', views.ListView.as_view(), name='list-lists'),
     path('lists/<int:pk>', views.ListDetailView.as_view(), name='list-single-list'),
+    path('lists/<int:pk>/tasks',views.TasksInTheList.as_view() ,name='list-tasks-in-list'),
     path('tasks/', views.TaskView.as_view(), name='task-tasks'),
     path('tasks/<int:pk>/', views.TaskDetailView.as_view(), name='task-single-task'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

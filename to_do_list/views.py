@@ -1,3 +1,4 @@
+from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import (
     ListModelMixin,
@@ -18,7 +19,7 @@ class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
         qs = List.objects.all()
         if self.request.user.is_staff or self.request.user.is_superuser:
             return qs
-        return qs.filter(owner=self.request.user.id)
+        return qs.filter(owner=self.request.user)
 
     def get(self, request):
         return self.list(request)
@@ -31,7 +32,13 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
 
     def get_object(self):
         pk = self.kwargs['pk']
-        return get_object_or_404(List, pk=pk)
+        obj = List.objects.get(pk=pk)
+        if(
+            self.request.user.is_staff or 
+            self.request.user.is_superuser or
+            self.request.user == obj.owner):
+            return get_object_or_404(List, pk=pk)
+        raise PermissionDenied
 
     def get(self, request, pk):
         return self.retrieve(request, pk)
@@ -41,6 +48,25 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
 
     def delete(self, request, pk):
         return self.destroy(request, pk)
+
+class TasksInTheList(GenericAPIView, ListModelMixin):
+    serializer_class = TaskSerializer
+    model = Task
+
+    def get_queryset(self):
+        qs = Task.objects.filter(task_list=self.kwargs['pk'])
+        if not qs.exists():
+            raise NotFound
+        list_owner_id = qs.values('task_list__owner')[0]['task_list__owner']
+        if(
+            self.request.user.is_staff or 
+            self.request.user.is_superuser or
+            self.request.user.id == list_owner_id):
+            return qs
+        raise PermissionDenied
+
+    def get(self, request, pk):
+        return self.list(request)
 
 class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = [TaskOutputSerializer, TaskInputSerializer]
@@ -83,7 +109,7 @@ class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return TaskOutputSerializer
-        return TaskInputSerializer
+        return TaskInputSerializerW
 
     def get(self, request, pk):
         return self.retrieve(request, pk)
