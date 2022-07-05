@@ -1,6 +1,7 @@
-from rest_framework.serializers import ModelSerializer, ValidationError, SerializerMethodField, HiddenField, CurrentUserDefault
-from .models import List, Task
-from .enums import PRIORITIES
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
+
+from to_do_list.models import List, Task
+from to_do_list.validation import PriorityValidation, TaskAssignmentValidation
 
 class ListSerializer(ModelSerializer):
     list_owner = SerializerMethodField()
@@ -13,30 +14,20 @@ class ListSerializer(ModelSerializer):
         return obj.owner.username
 
 
-class TaskSerializer(ModelSerializer):
+class TaskInputSerializer(ModelSerializer):
+    class Meta: 
+        model = Task
+        fields = ['id', 'body', 'task_list', 'priority']
+        validators = [PriorityValidation(object), TaskAssignmentValidation(object)]
+
+
+class TaskOutputSerializer(ModelSerializer):
     list_name = SerializerMethodField()
     task_owner = SerializerMethodField()
     class Meta: 
         model = Task
         fields = ['id', 'body', 'task_owner', 'task_list', 'list_name', 'priority']
-    
-    def validate(self, attrs):
-        priorities = [x[0] for x in PRIORITIES]
-        task_priority = attrs.get('priority')
-        task_list = attrs.get('task_list')
-        request = self.context.get('request')
-        list_owner = List.objects.get(id=task_list.id).owner
-
-        if request.user.is_superuser is False:
-            if request.user is not list_owner:
-                raise ValidationError(f"You are not the list owner")
-            pass
-        
-        if task_priority not in priorities:
-            raise ValidationError(f'Priority has to be letter: A, B, C, D or E')
-        pass
-
-        return attrs
+        validators = [PriorityValidation(object), TaskAssignmentValidation(object)]
 
     def get_list_name(self, obj):
         return obj.task_list.title

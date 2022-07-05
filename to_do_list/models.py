@@ -8,7 +8,8 @@ class List(models.Model):
     title = models.TextField(max_length=60)
     owner = models.ForeignKey('auth.User', related_name='list', on_delete=models.CASCADE)
 
-    def get_absolute_url(self):
+    @property
+    def absolute_url(self) -> str:
         return reverse("api:list-lists")
     
     def __str__(self):

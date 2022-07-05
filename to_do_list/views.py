@@ -9,7 +9,7 @@ from rest_framework.mixins import (
 )
 from django.shortcuts import get_object_or_404
 
-from to_do_list.serializers import ListSerializer, TaskSerializer
+from to_do_list.serializers import ListSerializer, TaskInputSerializer, TaskOutputSerializer
 from to_do_list.models import List, Task
 
 class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
@@ -69,14 +69,21 @@ class TasksInTheList(GenericAPIView, ListModelMixin):
         return self.list(request)
 
 class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
-    serializer_class = TaskSerializer
+    serializer_class = [TaskOutputSerializer, TaskInputSerializer]
     model = Task 
     
     def get_queryset(self):
-        qs = Task.objects.all()
-        if self.request.user.is_staff or self.request.user.is_superuser:
-            return qs
-        return qs.filter(task_list__owner=self.request.user)
+        tasks = Task.objects.all().select_related('task_list')
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            tasks = tasks.filter(task_list__owner=self.request.user.id)
+        if (search := self.request.query_params.get("task_list")) is not None:
+            return tasks.filter(task_list=search)
+        return tasks
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TaskOutputSerializer
+        return TaskInputSerializer
             
     def get(self, request):
         return self.list(request)
@@ -85,19 +92,24 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
         return self.create(request)
 
 class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
-    serializer_class = TaskSerializer
+    serializer_class = [TaskOutputSerializer, TaskInputSerializer]
     model = Task
     
-    def get_context_data(self, **kwargs):
-        data = super().get_context_data(**kwargs)
-        data['task_list'] = Task.task_list
-        data['priority'] = Task.priority
-        data['request'] = self.request
-        return data
+    def get_queryset(self):
+        tasks = Task.objects.all().select_related('task_list')
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            tasks = tasks.filter(task_list__owner=self.request.user.id)
+        if (search := self.request.query_params.get("task_list")) is not None:
+            return tasks.filter(task_list=search)
+        return tasks
     
     def get_object(self):
-        pk = self.kwargs['pk']
-        return get_object_or_404(Task, pk=pk)
+        return super().get_object()
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TaskOutputSerializer
+        return TaskInputSerializerW
 
     def get(self, request, pk):
         return self.retrieve(request, pk)
