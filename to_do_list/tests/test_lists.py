@@ -37,7 +37,7 @@ class TestLists(TestSetUp):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
     
     def test_if_test_user_can_get_all_lists(self):
-        self.logInTestUser()
+        self.client.force_login(self.test_user)
         lists = List.objects.all().count()
         response = self.client.get(reverse('api:list-lists'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -58,9 +58,8 @@ class TasksInTheListView(GenericAPIView, ListModelMixin, CreateModelMixin):
     def get_queryset(self):
         qs = Task.objects.filter(task_list=self.kwargs['pk']).select_related('task_list')
         list_owner_id = List.objects.filter(id=self.kwargs['pk']).values('owner')[0]['owner']
-        a = self.request.user.id == list_owner_id
         if (self.request.user.is_superuser
-        or a == True
+        or self.request.user.id == list_owner_id
         or not qs.exists()):
             return qs
         raise PermissionDenied
