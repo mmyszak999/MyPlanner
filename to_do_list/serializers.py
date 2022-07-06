@@ -18,7 +18,7 @@ class TaskInputSerializer(ModelSerializer):
     class Meta: 
         model = Task
         fields = ['id', 'body', 'task_list', 'priority']
-        validators = [PriorityValidation(object), TaskAssignmentValidation(object)]
+        validators = [PriorityValidation(), TaskAssignmentValidation()]
 
 
 class TaskOutputSerializer(ModelSerializer):
@@ -27,7 +27,7 @@ class TaskOutputSerializer(ModelSerializer):
     class Meta: 
         model = Task
         fields = ['id', 'body', 'task_owner', 'task_list', 'list_name', 'priority']
-        validators = [PriorityValidation(object), TaskAssignmentValidation(object)]
+        validators = [PriorityValidation(), TaskAssignmentValidation()]
 
     def get_list_name(self, obj):
         return obj.task_list.title
