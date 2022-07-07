@@ -11,17 +11,22 @@ from rest_framework.mixins import (
 )
 from django.shortcuts import get_object_or_404
 
-from to_do_list.serializers import ListSerializer, TaskInputSerializer, TaskOutputSerializer
+from to_do_list.serializers import ListInputSerializer, ListOutputSerializer, TaskInputSerializer, TaskOutputSerializer
 from to_do_list.models import List, Task
 
 class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
-    serializer_class = ListSerializer
+    serializer_class = ListOutputSerializer
     
     def get_queryset(self):
         qs = List.objects.all()
         if self.request.user.is_staff or self.request.user.is_superuser:
             return qs
         return qs.filter(owner=self.request.user)
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ListOutputSerializer
+        return ListInputSerializer
 
     def get(self, request: Request) -> Response:
         return self.list(request)
@@ -30,7 +35,7 @@ class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
         return self.create(request)
 
 class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
-    serializer_class = ListSerializer
+    serializer_class = ListOutputSerializer
 
     def get_object(self):
         pk = self.kwargs['pk']
@@ -41,6 +46,11 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
             self.request.user == obj.owner):
             return get_object_or_404(List, pk=pk)
         raise PermissionDenied
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ListOutputSerializer
+        return ListInputSerializer
 
     def get(self, request: Request, pk: int) -> Response:
         return self.retrieve(request, pk)
