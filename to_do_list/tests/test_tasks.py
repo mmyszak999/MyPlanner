@@ -68,4 +68,5 @@ class TestTasks(TestSetUp):
         list_id = self.lists[1].id
         self.task_data = {'body': 'Sign the deal with an asian company', 'task_list': list_id, 'priority': 'C' }
         response = self.client.post(reverse('api:list-tasks-in-list', kwargs={'pk': list_id}), data=self.task_data)
+        self.assertNotEqual(get_user(self.client), self.super_user)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

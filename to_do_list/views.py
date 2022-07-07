@@ -1,6 +1,7 @@
-from requests import request
 from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework.generics import GenericAPIView
+from rest_framework.request import Request
+from rest_framework.response import Response
 from rest_framework.mixins import (
     ListModelMixin,
     CreateModelMixin,
@@ -8,7 +9,7 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
     UpdateModelMixin
 )
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_object_or_404
 
 from to_do_list.serializers import ListSerializer, TaskInputSerializer, TaskOutputSerializer
 from to_do_list.models import List, Task
@@ -22,10 +23,10 @@ class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
             return qs
         return qs.filter(owner=self.request.user)
 
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         return self.list(request)
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         return self.create(request)
 
 class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
@@ -41,13 +42,13 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
             return get_object_or_404(List, pk=pk)
         raise PermissionDenied
 
-    def get(self, request, pk):
+    def get(self, request: Request, pk: int) -> Response:
         return self.retrieve(request, pk)
 
-    def put(self, request, pk):
+    def put(self, request: Request, pk: int) -> Response:
         return self.update(request, pk)
 
-    def delete(self, request, pk):
+    def delete(self, request: Request, pk: int) -> Response:
         return self.destroy(request, pk)
 
 
@@ -69,10 +70,10 @@ class TasksInTheListView(GenericAPIView, ListModelMixin, CreateModelMixin):
             return TaskOutputSerializer
         return TaskInputSerializer
             
-    def get(self, request, pk):
+    def get(self, request: Request, pk: int) -> Response:
         return self.list(request)
     
-    def post(self, request, pk):
+    def post(self, request: Request, pk: int) -> Response:
         return self.create(request)
 
 class TasksInTheListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
@@ -86,8 +87,6 @@ class TasksInTheListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMi
         tasks = Task.objects.filter(task_list=list_id).select_related('task_list')
         if obj not in tasks:
             raise NotFound
-        #if obj.id not in
-        #list_owner_id = qs.values('task_list__owner')[0]['task_list__owner']
         if self.request.user.is_superuser:
             return obj
         return get_object_or_404(Task, pk=pk, task_list__owner=self.request.user)
@@ -97,11 +96,11 @@ class TasksInTheListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMi
             return TaskOutputSerializer
         return TaskInputSerializer
 
-    def get(self, request, pk, task_pk):
+    def get(self, request: Request, pk: int, task_pk: int) -> Response:
         return self.retrieve(request, pk)
     
-    def put(self, request, pk, task_pk):
+    def put(self, request: Request, pk: int, task_pk: int) -> Response:
         return self.update(request, pk)
 
-    def delete(self, request, pk, task_pk):
+    def delete(self, request: Request, pk: int, task_pk: int) -> Response:
         return self.destroy(request, pk)
