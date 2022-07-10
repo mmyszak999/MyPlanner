@@ -3,6 +3,7 @@
  services:
   db:
       image: postgres
+      container_name: db_postgres
       environment: 
         - POSTGRES_DB=postgres
         - POSTGRES_USER=postgres
@@ -12,6 +13,7 @@
 
   web:
     build: .
+    container_name: backend
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code/
