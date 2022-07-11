@@ -36,10 +36,6 @@ class TestSetUp(APITestCase):
 
         cls.list_pk = randint(1, cls.list_count)
         cls.task_pk = randint(1, cls.task_count)
-    
-    def logInTestUser(self):
-        self.client.logout()
-        self.client.force_login(self.test_user)
 
     def setUp(self):
         self.client.force_login(self.super_user)
