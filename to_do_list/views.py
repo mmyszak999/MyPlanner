@@ -70,7 +70,7 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
         tasks = Task.objects.filter(task_list=self.kwargs["pk"]).select_related("task_list")
         user = self.request.user
         if not (user.is_staff or user.is_superuser):
-            return tasks.filter(task_list__owner=user)
+            raise PermissionDenied
         return tasks
 
     def get_serializer_class(self):
