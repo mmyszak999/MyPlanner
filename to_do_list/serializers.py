@@ -19,13 +19,18 @@ class ListInputSerializer(ModelSerializer):
         fields = ('id', 'title', 'owner')
 
 
-class ListOutputSerializer(Serializer):
-    id = ReadOnlyField()
+class ListOutputSerializer(ModelSerializer):
+    owner_name = ReadOnlyField(source='owner.username')
+
+    class Meta:
+        model = List
+        fields = ('id', 'title', 'owner', 'owner_name')
+    '''id = ReadOnlyField()
     title = CharField()
     owner = ReadOnlyField(source='owner.id')
     owner_name = ReadOnlyField(source='owner.username')
 
-    def save(self, **kwargs):
+def save(self, **kwargs):
         kwargs['owner'] = self.context['request'].user
         return super().save(**kwargs)
 
@@ -35,7 +40,7 @@ class ListOutputSerializer(Serializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.save()
-        return instance
+        return instance'''
 
 
 class TaskInputSerializer(ModelSerializer):
@@ -46,8 +51,15 @@ class TaskInputSerializer(ModelSerializer):
         validators = [PriorityValidation(), TaskAssignmentValidation()]
 
 
-class TaskOutputSerializer(Serializer):
-    id = ReadOnlyField()
+class TaskOutputSerializer(ModelSerializer):
+    task_owner = ReadOnlyField(source='task_list.owner.username')
+    list_name = ReadOnlyField(source='task_list.title')
+
+    class Meta:
+        model = Task
+        fields = ('id', 'body', 'task_list', 'priority', 'task_owner', 'list_name')
+        
+    '''id = ReadOnlyField()
     body = CharField()
     task_list = PrimaryKeyRelatedField(validators=[TaskAssignmentValidation()], read_only=True)
     priority = ChoiceField(PRIORITIES, validators=[PriorityValidation()])
@@ -64,4 +76,4 @@ class TaskOutputSerializer(Serializer):
         instance.body = validated_data.get('body', instance.body)
         instance.priority = validated_data.get('priority', instance.priority)
         instance.save()
-        return instance
+        return instance'''

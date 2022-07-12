@@ -62,18 +62,16 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
         return self.destroy(request, pk)
 
 
-class TasksInTheListView(GenericAPIView, ListModelMixin, CreateModelMixin):
+class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = TaskOutputSerializer
     model = Task
 
     def get_queryset(self):
-        qs = Task.objects.filter(task_list=self.kwargs['pk']).select_related('task_list')
-        list_owner_id = List.objects.filter(id=self.kwargs['pk']).values('owner')[0]['owner']
-        if (self.request.user.is_superuser
-        or self.request.user.id == list_owner_id
-        or not qs.exists()):
-            return qs
-        raise PermissionDenied
+        tasks = Task.objects.filter(task_list=self.kwargs["pk"]).select_related("task_list")
+        user = self.request.user
+        if not (user.is_staff or user.is_superuser):
+            return tasks.filter(task_list__owner=user)
+        return tasks
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -86,19 +84,16 @@ class TasksInTheListView(GenericAPIView, ListModelMixin, CreateModelMixin):
     def post(self, request: Request, pk: int) -> Response:
         return self.create(request)
 
-class TasksInTheListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
+class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = TaskOutputSerializer
     model = Task
     
     def get_object(self):
         pk = self.kwargs['task_pk']
         list_id = self.kwargs['pk']
-        obj = Task.objects.get(pk=pk)
         tasks = Task.objects.filter(task_list=list_id).select_related('task_list')
-        if obj not in tasks:
-            raise NotFound
         if self.request.user.is_superuser:
-            return obj
+            return get_object_or_404(tasks, pk=pk)
         return get_object_or_404(Task, pk=pk, task_list__owner=self.request.user)
     
     def get_serializer_class(self):
