@@ -20,7 +20,7 @@ class ListInputSerializer(Serializer):
     title = CharField()
     owner = ReadOnlyField(source='owner.id')
 
-    def save(self, **kwargs):
+    '''def save(self, **kwargs):
         kwargs['owner'] = self.context['request'].user
         return super().save(**kwargs)
 
@@ -30,7 +30,7 @@ class ListInputSerializer(Serializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.save()
-        return instance
+        return instance'''
 
 
 class ListOutputSerializer(ModelSerializer):

@@ -65,6 +65,7 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
 class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     serializer_class = TaskOutputSerializer
     model = Task
+    
 
     def get_queryset(self):
         tasks = Task.objects.filter(task_list=self.kwargs["pk"]).select_related("task_list")

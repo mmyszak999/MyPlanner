@@ -8,6 +8,7 @@ class TestLists(TestSetUp):
     def test_create_list(self):
         self.user_data = {'title': 'my_list', 'owner': self.super_user.id}
         response = self.client.post(reverse('api:list-lists'), data=self.user_data)
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(self.user_data['title'], str(List.objects.filter(owner=self.super_user).latest('title')))
         
