@@ -6,7 +6,9 @@ from rest_framework.serializers import (
     ChoiceField,
     PrimaryKeyRelatedField,
     SerializerMethodField,
-    IntegerField
+    IntegerField,
+    BaseSerializer,
+    CurrentUserDefault
 )
 
 from to_do_list.enums import PRIORITIES
@@ -16,9 +18,7 @@ from to_do_list.validation import PriorityValidation, TaskAssignmentValidation
 
 class ListInputSerializer(Serializer):
 
-    id = ReadOnlyField()    
     title = CharField()
-    owner = ReadOnlyField(source='owner.id')
 
     '''def save(self, **kwargs):
         kwargs['owner'] = self.context['request'].user

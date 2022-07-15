@@ -1,7 +1,12 @@
-from rest_framework.exceptions import PermissionDenied, NotFound
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import GenericAPIView
+from rest_framework.viewsets import GenericViewSet, ViewSet
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.status import (
+    HTTP_201_CREATED,
+    HTTP_503_SERVICE_UNAVAILABLE
+)
 from rest_framework.mixins import (
     ListModelMixin,
     CreateModelMixin,
@@ -9,12 +14,16 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
     UpdateModelMixin
 )
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
 from to_do_list.serializers import ListInputSerializer, ListOutputSerializer, TaskInputSerializer, TaskOutputSerializer
 from to_do_list.models import List, Task
+from to_do_list.services import ListCreateService
+from to_do_list.exceptions import ListCreateServiceException
 
-class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
+
+class ListView(ListCreateService, ViewSet, GenericAPIView, ListModelMixin):
     serializer_class = ListOutputSerializer
     
     def get_queryset(self):
@@ -31,8 +40,12 @@ class ListView(GenericAPIView, ListModelMixin, CreateModelMixin):
     def get(self, request: Request) -> Response:
         return self.list(request)
 
-    def post(self, request: Request) -> Response:
-        return self.create(request)
+    def create(self, request: Request):
+        dto = self._build_list_dto_from_validated_data(request)
+        list_create_service = ListCreateService()
+        created_list = list_create_service.list_create(dto)
+            
+        return Response(self.serializer_class(created_list).data, status=HTTP_201_CREATED)
 
 class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = ListOutputSerializer

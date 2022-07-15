@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from django.contrib.auth.models import User
 
+from to_do_list.models import List
 
 @dataclass(frozen=True)
 class ListEntity:
