@@ -1,11 +1,12 @@
+from venv import create
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import GenericAPIView
-from rest_framework.viewsets import GenericViewSet, ViewSet
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import (
+    HTTP_200_OK,
     HTTP_201_CREATED,
-    HTTP_503_SERVICE_UNAVAILABLE
 )
 from rest_framework.mixins import (
     ListModelMixin,
@@ -14,16 +15,16 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
     UpdateModelMixin
 )
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
-from to_do_list.serializers import ListInputSerializer, ListOutputSerializer, TaskInputSerializer, TaskOutputSerializer
+from to_do_list.serializers import (
+    ListInputSerializer, ListOutputSerializer,
+    TaskInputSerializer, TaskOutputSerializer)
 from to_do_list.models import List, Task
-from to_do_list.services import ListCreateService
-from to_do_list.exceptions import ListCreateServiceException
+from to_do_list.services import ListCreateService, ListUpdateService
 
 
-class ListView(ListCreateService, ViewSet, GenericAPIView, ListModelMixin):
+class ListView(GenericViewSet, ListModelMixin):
     serializer_class = ListOutputSerializer
     
     def get_queryset(self):
@@ -39,15 +40,15 @@ class ListView(ListCreateService, ViewSet, GenericAPIView, ListModelMixin):
 
     def get(self, request: Request) -> Response:
         return self.list(request)
-
-    def create(self, request: Request):
-        dto = self._build_list_dto_from_validated_data(request)
+    
+    def create(self, request: Request) -> Response:
         list_create_service = ListCreateService()
+        dto = list_create_service._build_list_dto_from_validated_data(request)
         created_list = list_create_service.list_create(dto)
             
         return Response(self.serializer_class(created_list).data, status=HTTP_201_CREATED)
 
-class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
+class ListDetailView(GenericViewSet, RetrieveModelMixin, DestroyModelMixin):
     serializer_class = ListOutputSerializer
 
     def get_object(self):
@@ -68,9 +69,15 @@ class ListDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, Destr
     def get(self, request: Request, pk: int) -> Response:
         return self.retrieve(request, pk)
 
-    def put(self, request: Request, pk: int) -> Response:
-        return self.update(request, pk)
+    def update(self, request: Request, pk: int) -> Response:
+        list_instance = self.get_object()
+        list_update_service = ListUpdateService()
+        dto = list_update_service._build_list_dto_from_validated_data(request, list_instance)
+        updated_list = list_update_service.list_update(dto, pk)
+        print(self.serializer_class(updated_list))
 
+        return Response(self.get_serializer(updated_list).data)
+        
     def delete(self, request: Request, pk: int) -> Response:
         return self.destroy(request, pk)
 

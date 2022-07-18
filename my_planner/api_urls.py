@@ -11,7 +11,7 @@ app_name = 'api'
 
 urlpatterns = [
     path('lists/', views.ListView.as_view({'post': 'create'}), name='list-lists'),
-    path('lists/<int:pk>', views.ListDetailView.as_view(), name='list-single-list'),
+    path('lists/<int:pk>', views.ListDetailView.as_view({'put': 'update'}), name='list-single-list'),
     path('lists/<int:pk>/tasks',views.TaskView.as_view(), name='list-tasks-in-list'),
     path('lists/<int:pk>/tasks/<int:task_pk>',views.TaskDetailView.as_view(), name='list-single-task-in-list'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

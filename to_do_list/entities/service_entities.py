@@ -1,12 +1,17 @@
 from dataclasses import dataclass
 from django.contrib.auth.models import User
 
-from to_do_list.models import List
+
+@dataclass(frozen=True)
+class UserEntity:
+    user: str
+
 
 @dataclass(frozen=True)
 class ListEntity:
     title: str
-    owner: User
+    owner: UserEntity
+
 
 @dataclass(frozen=True)
 class TaskEntity:

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'decouple',
     'corsheaders',
     'rest_framework_simplejwt',
+    'dacite',
 ]
 
 MIDDLEWARE = [

@@ -20,18 +20,6 @@ class ListInputSerializer(Serializer):
 
     title = CharField()
 
-    '''def save(self, **kwargs):
-        kwargs['owner'] = self.context['request'].user
-        return super().save(**kwargs)
-
-    def create(self, validated_data):
-        return List.objects.create(**validated_data)
-    
-    def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.save()
-        return instance'''
-
 
 class ListOutputSerializer(ModelSerializer):
     owner_name = ReadOnlyField(source='owner.username')
