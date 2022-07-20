@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from to_do_list.serializers import ListInputSerializer
-from to_do_list.entities.service_entities import ListEntity, UserEntity
+from to_do_list.entities.service_entities import ListEntity, UserEntity, TaskEntity
 from to_do_list.models import List, Task
 
 
@@ -33,7 +33,7 @@ class ListCreateService:
 class ListUpdateService:
     def list_update(self, dto, pk: int):
         instance, if_created = List.objects.filter(id=pk).update_or_create(
-            id=pk, owner=dto.owner,
+            owner=dto.owner,
             defaults={'title': dto.title}
         )
         return instance
@@ -50,4 +50,17 @@ class ListUpdateService:
             title=data['title'],
             owner=request.user
         )
+
+class TaskCreateService:
+    
+    def task_create(self):
+        pass
+    
+    @classmethod
+    def get_list_instance(cls):
+        pass
+
+    @classmethod
+    def _build_task_dto_from_validated_data(cls):
+        pass
 
