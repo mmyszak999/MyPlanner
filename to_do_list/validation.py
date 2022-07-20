@@ -4,9 +4,11 @@ from typing import (
 )
 
 from rest_framework.serializers import ValidationError
-from to_do_list.enums import PRIORITIES
+from rest_framework.request import Request
 
+from to_do_list.enums import PRIORITIES
 from to_do_list.models import List
+
 
 class PriorityValidation():
 
@@ -19,7 +21,7 @@ class PriorityValidation():
 class TaskAssignmentValidation():
     requires_context = True
 
-    def __call__(self, value: OrderedDict[str, Any], obj_data: OrderedDict[str, Any]):
+    def __call__(self, value: OrderedDict[str, Any], obj_data: OrderedDict[str, Any]) -> None:
         task_list = value.id
         list_owner = List.objects.get(id=task_list).owner
         current_user = obj_data.context['request'].user

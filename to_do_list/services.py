@@ -6,8 +6,8 @@ from requests import request
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from to_do_list.serializers import ListInputSerializer
-from to_do_list.entities.service_entities import ListEntity, UserEntity, TaskEntity
+from to_do_list.serializers import ListInputSerializer, TaskInputSerializer
+from to_do_list.entities.service_entities import ListEntity, TaskEntity
 from to_do_list.models import List, Task
 
 
@@ -31,7 +31,7 @@ class ListCreateService:
         )
 
 class ListUpdateService:
-    def list_update(self, dto, pk: int):
+    def list_update(self, dto, pk: int) -> List:
         instance, if_created = List.objects.filter(id=pk).update_or_create(
             owner=dto.owner,
             defaults={'title': dto.title}
@@ -53,14 +53,36 @@ class ListUpdateService:
 
 class TaskCreateService:
     
-    def task_create(self):
-        pass
+    def task_create(self, dto, list_pk: int) -> Task:
+
+        return Task.objects.create(
+            body=dto.body,
+            task_list=self._get_list_instance(list_pk),
+            priority=dto.priority
+        )
     
     @classmethod
-    def get_list_instance(cls):
-        pass
+    def _get_list_instance(cls, pk: int) -> List:
+        return List.objects.get(pk=pk)
+
 
     @classmethod
-    def _build_task_dto_from_validated_data(cls):
-        pass
+    def _build_list_dto_from_validated_data(cls, request: Request, pk: int) -> ListEntity:
+        instance = cls._get_list_instance(pk)
 
+        return ListEntity(
+            title=instance.title,
+            owner=request.user
+        )
+
+    @classmethod
+    def _build_task_dto_from_validated_data(cls, request: Request, pk: int) -> TaskEntity:
+        serializer = TaskInputSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        return TaskEntity(
+            body=data['body'],
+            task_list=cls._build_list_dto_from_validated_data(request, pk),
+            priority=data['priority'],
+        )

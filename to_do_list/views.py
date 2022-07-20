@@ -21,7 +21,10 @@ from to_do_list.serializers import (
     ListInputSerializer, ListOutputSerializer,
     TaskInputSerializer, TaskOutputSerializer)
 from to_do_list.models import List, Task
-from to_do_list.services import ListCreateService, ListUpdateService
+from to_do_list.services import (
+    ListCreateService, ListUpdateService, TaskCreateService
+    )
+
 
 
 class ListView(GenericViewSet, ListModelMixin):
@@ -82,7 +85,7 @@ class ListDetailView(GenericViewSet, RetrieveModelMixin, DestroyModelMixin):
         return self.destroy(request, pk)
 
 
-class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
+class TaskView(GenericViewSet, ListModelMixin):
     serializer_class = TaskOutputSerializer
     model = Task
     
@@ -102,8 +105,12 @@ class TaskView(GenericAPIView, ListModelMixin, CreateModelMixin):
     def get(self, request: Request, pk: int) -> Response:
         return self.list(request)
     
-    def post(self, request: Request, pk: int) -> Response:
-        return self.create(request)
+    def create(self, request: Request, pk: int) -> Response:
+        task_create_service = TaskCreateService()
+        dto = task_create_service._build_task_dto_from_validated_data(request, pk)
+        created_task = task_create_service.task_create(dto, pk)
+            
+        return Response(self.serializer_class(created_task).data, status=HTTP_201_CREATED)
 
 class TaskDetailView(GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin):
     serializer_class = TaskOutputSerializer
