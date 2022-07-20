@@ -77,7 +77,7 @@ class ListDetailView(GenericViewSet, RetrieveModelMixin, DestroyModelMixin):
         list_update_service = ListUpdateService()
         dto = list_update_service._build_list_dto_from_validated_data(request, list_instance)
         updated_list = list_update_service.list_update(dto, pk)
-        print(self.serializer_class(updated_list))
+
 
         return Response(self.get_serializer(updated_list).data)
         
@@ -86,14 +86,14 @@ class ListDetailView(GenericViewSet, RetrieveModelMixin, DestroyModelMixin):
 
 
 class TaskView(GenericViewSet, ListModelMixin):
-    serializer_class = TaskOutputSerializer
+    serializer_class = TaskInputSerializer
     model = Task
     
-
     def get_queryset(self):
         tasks = Task.objects.filter(task_list=self.kwargs["pk"]).select_related("task_list")
+        task_list = List.objects.get(pk=self.kwargs['pk'])
         user = self.request.user
-        if not (user.is_staff or user.is_superuser):
+        if not (user.is_staff or user.is_superuser or task_list.owner == user):
             raise PermissionDenied
         return tasks
 

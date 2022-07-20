@@ -35,9 +35,6 @@ class TaskInputSerializer(Serializer):
     body = CharField()
     task_list = PrimaryKeyRelatedField(validators=[TaskAssignmentValidation()], queryset=List.objects.all())
     priority = ChoiceField(PRIORITIES, validators=[PriorityValidation()])
-
-    '''def create(self, validated_data):
-        return Task.objects.create(**validated_data)'''
     
     def update(self, instance, validated_data):
         instance.body = validated_data.get('body', instance.body)
