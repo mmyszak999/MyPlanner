@@ -54,7 +54,6 @@ class ListUpdateService:
 class TaskCreateService:
     
     def task_create(self, dto, list_pk: int) -> Task:
-
         return Task.objects.create(
             body=dto.body,
             task_list=self._get_list_instance(list_pk),
@@ -86,3 +85,41 @@ class TaskCreateService:
             task_list=cls._build_list_dto_from_validated_data(request, pk),
             priority=data['priority'],
         )
+
+class TaskUpdateService:
+    def task_update(self, dto, task_pk: int, pk: int) -> Task:
+        instance, if_created = Task.objects.filter(id=task_pk).update_or_create(
+            task_list=self._get_list_instance(pk),
+            defaults={'body': dto.body, 'priority': dto.priority}
+        )
+        return instance
+    
+    @classmethod
+    def _get_list_instance(cls, pk: int) -> List:
+        return List.objects.get(pk=pk)
+    
+    @classmethod
+    def _build_list_dto_from_validated_data(cls, request: Request, pk: int) -> ListEntity:
+        instance = cls._get_list_instance(pk)
+
+        return ListEntity(
+            title=instance.title,
+            owner=request.user
+        )
+
+    @classmethod
+    def _build_task_dto_from_validated_data(cls, request: Request, pk: int, instance: Task) -> TaskEntity:
+        serializer = TaskInputSerializer(instance, data=request.data, partial=True, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        instance.body = data['body']
+        instance.priority = data['priority']
+        instance.save()
+
+        return TaskEntity(
+            body=data['body'],
+            task_list=cls._build_list_dto_from_validated_data(request, pk),
+            priority=data['priority'],
+        )
+
+    
