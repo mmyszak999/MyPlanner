@@ -10,7 +10,7 @@ from to_do_list.enums import PRIORITIES
 from to_do_list.models import List
 
 
-class PriorityValidation():
+class PriorityValidation:
 
     def __call__(self, value: OrderedDict[str, Any]):
         priorities = [_priority[0] for _priority in PRIORITIES]
@@ -18,12 +18,11 @@ class PriorityValidation():
         if task_priority not in priorities:
             raise ValidationError('Priority has to be letter: A, B, C, D or E')
 
-class TaskAssignmentValidation():
+class TaskAssignmentValidation:
     requires_context = True
 
     def __call__(self, value: OrderedDict[str, Any], obj_data: OrderedDict[str, Any]) -> None:
-        task_list = value.id
-        list_owner = List.objects.get(id=task_list).owner
+        list_owner = value.owner
         current_user = obj_data.context['request'].user
         
         if not (current_user == list_owner or current_user.is_superuser):
