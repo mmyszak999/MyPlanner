@@ -45,7 +45,7 @@ class TestTasks(TestSetUp):
         list_id = 2137
         self.task_data = {'body': '3 bottles of water', 'task_list': list_id, 'priority': 'A' }
         response = self.client.post(reverse('api:list-tasks-in-list', kwargs={'pk': list_id}), data=self.task_data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
     def test_create_task_with_an_incorrect_priority(self):
         priority = 'Z'
@@ -58,7 +58,7 @@ class TestTasks(TestSetUp):
         tasks = Task.objects.filter(task_list=self.lists[1].id).count()
         response = self.client.get(reverse('api:list-tasks-in-list', kwargs={'pk': self.lists[1].id}))
         self.assertNotEqual(tasks, len(response.data))
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
     def test_if_test_user_can_not_post_task_to_not_their_list(self):
         self.client.force_login(self.test_user)

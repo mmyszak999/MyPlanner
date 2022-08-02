@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import List, Task
+from to_do_list.models import List, Task
 
 class ListAdmin(admin.ModelAdmin):
     pass

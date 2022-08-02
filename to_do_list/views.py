@@ -2,6 +2,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_404_NOT_FOUND,
@@ -55,8 +56,8 @@ class ListDetailView(GenericViewSet, RetrieveModelMixin, DestroyModelMixin):
             self.request.user.is_staff or 
             self.request.user.is_superuser or
             self.request.user == obj.owner):
-            return get_object_or_404(List, pk=pk)
-        raise PermissionDenied
+            return obj
+        return get_object_or_404(List.objects.filter(owner=self.request.user), pk=pk)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -85,9 +86,9 @@ class TaskView(GenericViewSet, ListModelMixin):
         tasks = Task.objects.filter(task_list=self.kwargs["pk"]).select_related("task_list")
         task_list = List.objects.get(pk=self.kwargs['pk'])
         user = self.request.user
-        if not (user.is_staff or user.is_superuser or task_list.owner == user):
-            raise PermissionDenied
-        return tasks
+        if (user.is_staff or user.is_superuser or task_list.owner == user):
+            return tasks
+        raise NotFound
 
     def get_serializer_class(self):
         if self.request.method == 'GET':

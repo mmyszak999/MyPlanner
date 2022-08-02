@@ -28,9 +28,7 @@ class ListOutputSerializer(ModelSerializer):
 
 class TaskInputSerializer(Serializer):
 
-    id = ReadOnlyField()
     body = CharField()
-    task_list = PrimaryKeyRelatedField(validators=[TaskAssignmentValidation()], queryset=List.objects.all())
     priority = ChoiceField(PRIORITIES, validators=[PriorityValidation()])
 
 
