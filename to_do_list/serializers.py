@@ -4,12 +4,10 @@ from rest_framework.serializers import (
     CharField,
     ReadOnlyField,
     ChoiceField,
-    PrimaryKeyRelatedField,
 )
 
 from to_do_list.enums import PRIORITIES
 from to_do_list.models import List, Task
-from to_do_list.validation import PriorityValidation, TaskAssignmentValidation
 
 
 class ListInputSerializer(Serializer):
@@ -29,7 +27,7 @@ class ListOutputSerializer(ModelSerializer):
 class TaskInputSerializer(Serializer):
 
     body = CharField()
-    priority = ChoiceField(PRIORITIES, validators=[PriorityValidation()])
+    priority = ChoiceField(PRIORITIES)
 
 
 class TaskOutputSerializer(ModelSerializer):

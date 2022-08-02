@@ -1,5 +1,5 @@
+from typing import OrderedDict
 from django.contrib.auth.models import User
-from rest_framework.request import Request
 
 from to_do_list.serializers import ListInputSerializer, TaskInputSerializer
 from to_do_list.entities.service_entities import ListEntity, TaskEntity
@@ -15,7 +15,7 @@ class ListCreateService:
         )
 
     @classmethod
-    def _build_list_dto_from_request_data(cls, request_data) -> ListEntity:
+    def _build_list_dto_from_request_data(cls, request_data: OrderedDict) -> ListEntity:
         serializer = ListInputSerializer(data=request_data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -32,7 +32,7 @@ class ListUpdateService:
         return instance
 
     @classmethod
-    def _build_list_dto_from_request_data(cls, request_data, instance: List) -> ListEntity:
+    def _build_list_dto_from_request_data(cls, request_data: OrderedDict, instance: List) -> ListEntity:
         serializer = ListInputSerializer(instance, data=request_data, partial=True)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -50,17 +50,9 @@ class TaskCreateService:
             priority=dto.priority
         )
 
-
     @classmethod
-    def _build_list_dto_from_request_data(cls, request, pk: int) -> ListEntity:
-
-        return ListEntity(
-            title=request.data['title'],
-        )
-
-    @classmethod
-    def _build_task_dto_from_request_data(cls, request, pk: int) -> TaskEntity:
-        serializer = TaskInputSerializer(data=request.data, context={'request': request})
+    def _build_task_dto_from_request_data(cls, request_data: OrderedDict) -> TaskEntity:
+        serializer = TaskInputSerializer(data=request_data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
@@ -77,26 +69,12 @@ class TaskUpdateService:
 
         return instance
     
-    @classmethod
-    def _get_list_instance(cls, pk: int) -> List:
-        return List.objects.get(pk=pk)
-    
-    @classmethod
-    def _build_list_dto_from_validated_data(cls, request: Request, pk: int) -> ListEntity:
-        instance = cls._get_list_instance(pk)
-
-        return ListEntity(
-            title=instance.title
-        )
 
     @classmethod
-    def _build_task_dto_from_validated_data(cls, request: Request, pk: int, instance: Task) -> TaskEntity:
-        serializer = TaskInputSerializer(instance, data=request.data, partial=True, context={'request': request})
+    def _build_task_dto_from_validated_data(cls, request_data: OrderedDict, instance: Task) -> TaskEntity:
+        serializer = TaskInputSerializer(instance, data=request_data, partial=True)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        instance.body = data['body']
-        instance.priority = data['priority']
-        instance.save()
 
         return TaskEntity(
             body=data['body'],

@@ -1,8 +1,7 @@
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_404_NOT_FOUND,
@@ -18,6 +17,7 @@ from to_do_list.serializers import (
     ListInputSerializer, ListOutputSerializer, TaskInputSerializer, TaskOutputSerializer
     )
 from to_do_list.models import List, Task
+from to_do_list.validation import TaskAssignmentValidation
 from to_do_list.services import (
     ListCreateService, ListUpdateService, TaskCreateService, TaskUpdateService
     )
@@ -100,9 +100,10 @@ class TaskView(GenericViewSet, ListModelMixin):
     
     def create(self, request: Request, pk: int) -> Response:
         task_create_service = TaskCreateService()
-        dto = task_create_service._build_task_dto_from_request_data(request, pk)
+        dto = task_create_service._build_task_dto_from_request_data(request.data)
         try:
             list_instance = List.objects.get(pk=pk)
+            TaskAssignmentValidation(request, list_instance)
         except List.DoesNotExist:
             return Response(status=HTTP_404_NOT_FOUND)
         created_task = task_create_service.task_create(dto, list_instance)
@@ -131,7 +132,7 @@ class TaskDetailView(GenericViewSet, RetrieveModelMixin, DestroyModelMixin):
     def update(self, request: Request, pk: int, task_pk: int) -> Response:
         task_instance = self.get_object()
         task_update_service = TaskUpdateService()
-        dto = task_update_service._build_task_dto_from_validated_data(request, pk, task_instance)
+        dto = task_update_service._build_task_dto_from_validated_data(request.data, task_instance)
         updated_task = task_update_service.task_update(dto, task_instance)
         return Response(self.get_serializer(updated_task).data)
 
