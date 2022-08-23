@@ -41,10 +41,8 @@ INSTALLED_APPS = [
     'to_do_list.apps.ToDoListConfig',
 
     'rest_framework',
-    'decouple',
     'corsheaders',
     'rest_framework_simplejwt',
-    'dacite',
 ]
 
 MIDDLEWARE = [
@@ -150,7 +148,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
      'DEFAULT_AUTHENTICATION_CLASSES': [
-        #'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
 }
