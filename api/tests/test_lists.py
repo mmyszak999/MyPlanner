@@ -19,7 +19,7 @@ class TestLists(TestSetUp):
     
     def test_get_single_list(self):
         self.obj = List.objects.get(pk=self.list_pk)
-        response = self.client.get(reverse('api:list-single-list', kwargs={'pk': self.obj.pk})).get(reverse('api:list-single-list', kwargs={'pk': self.obj.pk}))
+        response = self.client.get(reverse('api:list-single-list', kwargs={'pk': self.obj.pk}))
         self.assertEqual(response.data['id'], self.obj.pk)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     

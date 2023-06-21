@@ -4,23 +4,17 @@
   db:
       image: postgres
       container_name: db_postgres
-      environment: 
-        - POSTGRES_DB=postgres
-        - POSTGRES_USER=postgres
-        - POSTGRES_PASSWORD=k44wy3p51
+      env_file: ./MyPlannerProject/.env
       ports:
         - "5432:5432"
 
   web:
     build: .
-    container_name: backend
+    container_name: backend_django
     volumes:
       - .:/code/
     ports:
       - "8000:8000"
-    environment:
-      - POSTGRES_NAME=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=k44wy3p51
+    env_file: ./MyPlannerProject/.env
     depends_on:
       - db
