@@ -2,8 +2,8 @@ from django.urls import reverse
 from django.contrib.auth import get_user
 from rest_framework import status
 
-from to_do_list.tests.test_setup import TestSetUp
-from to_do_list.models import Task
+from api.tests.test_setup import TestSetUp
+from api.models import Task
 
 
 class TestTasks(TestSetUp):

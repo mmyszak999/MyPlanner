@@ -1,9 +1,9 @@
 from typing import OrderedDict
 from django.contrib.auth.models import User
 
-from to_do_list.serializers import ListInputSerializer, TaskInputSerializer
-from to_do_list.entities.service_entities import ListEntity, TaskEntity
-from to_do_list.models import List, Task
+from api.serializers import ListInputSerializer, TaskInputSerializer
+from api.entities.service_entities import ListEntity, TaskEntity
+from api.models import List, Task
 
 
 class ListCreateService:

@@ -25,7 +25,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool, default=True)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS')
+ALLOWED_HOSTS = [config('ALLOWED_HOSTS')]
 
 
 # Application definition
@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'to_do_list.apps.ToDoListConfig',
+    'api.apps.APIConfig',
 
     'rest_framework',
     'corsheaders',
@@ -59,13 +59,13 @@ MIDDLEWARE = [
 
 ]
 
-ROOT_URLCONF = 'my_planner.urls'
+ROOT_URLCONF = 'MyPlannerProject.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / 'to_do_list/templates/todolist'
+            BASE_DIR / 'api/templates/api'
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -79,7 +79,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'my_planner.wsgi.application'
+WSGI_APPLICATION = 'MyPlannerProject.wsgi.application'
 
 
 # Database
