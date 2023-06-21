@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from .enums import PRIORITIES
 
+
 class List(models.Model):
     title = models.TextField(max_length=60)
     owner = models.ForeignKey('auth.User', related_name='list', on_delete=models.CASCADE)
@@ -13,6 +14,7 @@ class List(models.Model):
     
     def __str__(self):
         return self.title[0:50]
+
 
 class Task(models.Model):
     body = models.TextField(max_length=75)
