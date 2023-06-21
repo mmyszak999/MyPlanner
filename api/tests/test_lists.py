@@ -1,8 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
-from to_do_list.tests.test_setup import TestSetUp
-from to_do_list.models import List
+from api.tests.test_setup import TestSetUp
+from api.models import List
 
 
 class TestLists(TestSetUp):

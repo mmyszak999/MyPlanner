@@ -6,8 +6,8 @@ from rest_framework.serializers import (
     ChoiceField,
 )
 
-from to_do_list.enums import PRIORITIES
-from to_do_list.models import List, Task
+from api.enums import PRIORITIES
+from api.models import List, Task
 
 
 class ListInputSerializer(Serializer):

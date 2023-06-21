@@ -1,7 +1,7 @@
 from rest_framework.serializers import ValidationError
 from rest_framework.request import Request
 
-from to_do_list.models import List
+from api.models import List
 
 
 def TaskAssignmentValidation(request: Request, instance: List) -> None:

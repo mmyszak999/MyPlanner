@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 
-
 @dataclass(frozen=True)
 class ListEntity:
     title: str

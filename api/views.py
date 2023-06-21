@@ -13,12 +13,12 @@ from rest_framework.mixins import (
 )
 from django.shortcuts import get_object_or_404
 
-from to_do_list.serializers import (
+from api.serializers import (
     ListInputSerializer, ListOutputSerializer, TaskInputSerializer, TaskOutputSerializer
 )
-from to_do_list.models import List, Task
-from to_do_list.validation import TaskAssignmentValidation
-from to_do_list.services import (
+from api.models import List, Task
+from api.validation import TaskAssignmentValidation
+from api.services import (
     ListCreateService, ListUpdateService, TaskCreateService, TaskUpdateService
 )
 
