@@ -25,7 +25,6 @@ class ListOutputSerializer(ModelSerializer):
 
 
 class TaskInputSerializer(Serializer):
-
     body = CharField()
     priority = ChoiceField(PRIORITIES)
 

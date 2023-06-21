@@ -4,6 +4,7 @@ from rest_framework import status
 from to_do_list.tests.test_setup import TestSetUp
 from to_do_list.models import List
 
+
 class TestLists(TestSetUp):
     def test_create_list(self):
         self.user_data = {'title': 'my_list', 'owner': self.super_user.id}
@@ -18,7 +19,7 @@ class TestLists(TestSetUp):
     
     def test_get_single_list(self):
         self.obj = List.objects.get(pk=self.list_pk)
-        response = self.client.get(reverse('api:list-single-list', kwargs={'pk': self.obj.pk}))
+        response = self.client.get(reverse('api:list-single-list', kwargs={'pk': self.obj.pk})).get(reverse('api:list-single-list', kwargs={'pk': self.obj.pk}))
         self.assertEqual(response.data['id'], self.obj.pk)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     

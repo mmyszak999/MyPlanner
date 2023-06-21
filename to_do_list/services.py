@@ -24,6 +24,7 @@ class ListCreateService:
             title=data['title']
         )
 
+
 class ListUpdateService:
     def list_update(self, dto: ListEntity, instance: List) -> List:
         instance.title = dto.title
@@ -41,9 +42,10 @@ class ListUpdateService:
             title=data['title'],
         )
 
+
 class TaskCreateService:
-    
-    def task_create(self, dto: TaskEntity, list_instance=List) -> Task:
+
+    def task_create(self, dto: TaskEntity, list_instance: List) -> Task:
         return Task.objects.create(
             body=dto.body,
             task_list=list_instance,
@@ -61,6 +63,7 @@ class TaskCreateService:
             priority=data['priority'],
         )
 
+
 class TaskUpdateService:
     def task_update(self, dto: TaskEntity, instance: Task) -> Task:
         instance.body = dto.body
@@ -68,7 +71,6 @@ class TaskUpdateService:
         instance.save(update_fields=['body', 'priority'])
 
         return instance
-    
 
     @classmethod
     def _build_task_dto_from_validated_data(cls, request_data: OrderedDict, instance: Task) -> TaskEntity:
@@ -80,5 +82,3 @@ class TaskUpdateService:
             body=data['body'],
             priority=data['priority'],
         )
-
-    
